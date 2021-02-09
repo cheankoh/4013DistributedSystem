@@ -25,6 +25,7 @@ public class FacilityController {
     }
 
     public int extendBookingSlot(int bookingID, int noOfSlots) {
+        System.out.println("Hi");
         return 0;
     }
 }
