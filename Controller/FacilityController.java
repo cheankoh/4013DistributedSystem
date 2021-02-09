@@ -14,4 +14,17 @@ public class FacilityController {
     public String shiftBookingSlot(int bookingID, int offset) {
         return "Successfully shifted.";
     }
+
+    public int cancelBooking(int bookingID) {
+        boolean validID = false;
+        if (!validID)
+            return -1;
+        else {
+            return 0;
+        }
+    }
+
+    public int extendBookingSlot(int bookingID, int noOfSlots) {
+        return 0;
+    }
 }
