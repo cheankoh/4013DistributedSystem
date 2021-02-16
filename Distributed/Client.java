@@ -6,6 +6,7 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.util.Scanner;
 
 //JUST TO TEST
 import java.nio.charset.StandardCharsets;
@@ -52,27 +53,134 @@ public class Client{
 
     //Main thread of the client
     public static void main(String[] args) throws IOException{
-        System.out.println("Welcome to Facility Booking System! Intializing Client...");
-        
+        System.out.println("====================================");
+        System.out.println("Welcome to Facility Booking System !");
         // Construct client and test sending dummies through to server
         String host = "localhost";
         int port = 50001;
         Client client = new Client(host,port);
 
-        //Test sending a random message by converting it to byte (marshalling)
-        String randomMsg = "Hello World from client side!";
-        System.out.println("Sending message : " + randomMsg);
-        byte[] byteToSend = randomMsg.getBytes();
-        client.send(byteToSend);
-
-        //Test receiving a message from server
-        byte[] byteReceived = client.receive();
-        String randomReceivedMsg = new String(byteReceived, StandardCharsets.UTF_8);
-        System.out.println("Received message : " + randomReceivedMsg);
-
-        //Test sending an ACK from client to server
-
         //TODO: Do a console IO stuffs here
+        boolean quit = false;
+        int choice;
+        Scanner sc = new Scanner(System.in);
+
+        while (!quit){
+            System.out.println("====================================");
+            System.out.println("1. Check Facility Availibility.");
+            System.out.println("2. Book Facility.");
+            System.out.println("3. Change Booking Slot");
+            System.out.println("4. Monitor Facility Availibility");
+            System.out.println("5. Cancel Booking");
+            System.out.println("6. Extend Booking Slot");
+            System.out.println("7. Quit Program.");
+            System.out.println("====================================");
+            System.out.print("Please select an option: ");
+
+            choice = sc.nextInt();
+
+            System.out.println("====================================");
+
+            switch(choice){
+                case 1:
+                    System.out.println("CHECK FACILITY AVAILIBILITY");
+                    System.out.print("Please enter facility: ");
+                    String facility = sc.next();
+                    System.out.print("Please enter days [ e.g. 1-7 (range) or 1 (number) ]: ");
+                    //TODO Delimt by "-"
+                    String date = sc.next();
+
+                    //Marshal String and String to byte array form then stick them together
+                    byte[] a = facility.getBytes();
+                    byte[] b = date.getBytes();
+                    byte[] request = new byte[a.length + b.length];
+                    System.arraycopy(a, 0, request, 0, a.length);
+                    System.arraycopy(b, 0, request, a.length, b.length);
+
+                    //Send
+                    client.send(request);
+
+                    //Receive
+                    byte[] response = client.receive();
+
+                    //Demarshall
+                    String receivedString = new String(response, StandardCharsets.UTF_8);
+                    System.out.println("Response: " + receivedString);
+
+                    break;
+
+                case 2:
+                    // Assumption can only book 1 day and max 2 slots ?
+                    // Do we allow bulk booking ?
+                    System.out.println("BOOK FACILITY");
+                    System.out.print("Please enter facility: ");
+                    facility = sc.next();
+                    System.out.print("Please enter day: ");
+                    date = sc.next();
+                    System.out.print("Please enter start time: ");
+                    float start = sc.nextFloat();
+                    System.out.print("Please enter end time: ");
+                    float stop = sc.nextFloat();
+
+                    // Next steps same as above
+                    // TODO Marshal float -> byte
+                    break;
+
+                case 3:
+                    System.out.println("CHANGE BOOKING SLOT");
+                    System.out.print("Please enter booking confirmation ID: ");
+                    String bookingId = sc.next();
+                    System.out.print("Please enter offset (+ delay - forward): ");
+                    int offset = sc.nextInt();
+
+                    // Next steps same as above
+                    // TODO Marshal int -> byte
+
+                    break;
+
+                case 4:
+                    System.out.println("MONITOR FACILITY AVAILIBILITY");
+                    System.out.print("Please enter facility: ");
+                    facility = sc.next();
+                    System.out.print("Please enter duration (secs): ");
+                    int duration = sc.nextInt();
+
+                    //TODO Some While loop to block
+
+                    break;
+
+                case 5:
+                    System.out.println("CANCEL BOOKING");
+                    System.out.print("Please enter booking confirmation ID: ");
+                    bookingId = sc.next();
+                    break;
+
+                case 6:
+                    System.out.println("EXTEND BOOKING SLOT");
+                    System.out.print("Please enter booking confirmation ID: ");
+                    bookingId = sc.next();
+                    System.out.print("Please enter offset (+ extend - shorten): ");
+                    offset = sc.nextInt();
+
+                    break;
+
+                case 7:
+                    System.out.println("SHUTTING DOWN");
+                    quit = true;
+                    //Close the client socket
+                    client.clientSocket.close();
+                    System.out.println("... DONE");
+                    break;
+
+                default:
+                    System.out.println("Invald option! Please try again !");
+            }
+
+        }
+
+
+
+
     }
 
 }
