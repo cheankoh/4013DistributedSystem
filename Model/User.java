@@ -1,8 +1,9 @@
 package Model;
 
 import java.util.ArrayList;
+import java.io.Serializable;
 
-public class User {
+public class User implements Serializable{
     private String userName;
     private int userID;
     private ArrayList<Booking> userBooking;
