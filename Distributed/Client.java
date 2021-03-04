@@ -50,7 +50,7 @@ public class Client{
         
         return messageBuffer; 
     }
-    
+
     //Main thread of the client
     public static void main(String[] args) throws IOException{
         System.out.println("====================================");
@@ -100,24 +100,42 @@ public class Client{
                                     System.out.println("1. Learning Pod 1");
                                     System.out.println("2. Learning Pod 2");
                                     System.out.println("====================================");
-                    }
+                                    break;
+                        case 2:     System.out.println("Please select facility number: ");
+                                    System.out.println("====================================");
+                                    System.out.println("1. Lecture Theatre 1");
+                                    System.out.println("2. Lecture Theatre 2");
+                                    System.out.println("====================================");
+                                    break;                    
+                        case 3:     System.out.println("Please select facility number: ");
+                                    System.out.println("====================================");
+                                    System.out.println("1. Tutorial Room 1");
+                                    System.out.println("2. Tutorial Room 2");
+                                    System.out.println("====================================");
+                                    break;                    
+                        case 4:     System.out.println("Please select facility number: ");
+                                    System.out.println("====================================");
+                                    System.out.println("1. Language Room 1");
+                                    System.out.println("2. Language Room 2");
+                                    System.out.println("====================================");
+                                    break;                    }
                     int facilityNumber = sc.nextInt();
 
                     System.out.print("Please enter days [ e.g. 1-7 (range) or 1 (number) ]: ");
                     //TODO Delimt by "-"
                     String date = sc.next();
-
+                    date = date.replace("-","");
                     //Marshal String and String to byte array form then stick them together
 
                     byte[] requestID = Integer.toString(choice).getBytes();
                     byte[] facilityType = Integer.toString(facility).getBytes();
                     byte[] facilitySelection = Integer.toString(facilityNumber).getBytes();
-                    byte[] numDayOfBooking = date.getBytes();
-                    byte[] request = new byte[requestID.length + facilityType.length+ facilitySelection.length+numDayOfBooking.length];
+                    byte[] dayOfBooking = date.getBytes();
+                    byte[] request = new byte[requestID.length + facilityType.length+ facilitySelection.length+dayOfBooking.length];
                     System.arraycopy(requestID, 0, request, 0, requestID.length);
                     System.arraycopy(facilityType, 0, request, requestID.length, facilityType.length);
                     System.arraycopy(facilitySelection, 0, request, requestID.length+facilityType.length, facilitySelection.length);
-                    System.arraycopy(numDayOfBooking, 0, request, requestID.length+facilityType.length+facilitySelection.length, numDayOfBooking.length);
+                    System.arraycopy(dayOfBooking, 0, request, requestID.length+facilityType.length+facilitySelection.length, dayOfBooking.length);
 
                     //Send
                     client.send(request);
@@ -127,7 +145,7 @@ public class Client{
 
                     //Demarshall
                     String receivedString = new String(response, StandardCharsets.UTF_8);
-                    System.out.println("Response: " + receivedString);
+                    System.out.println("Response: \n" + receivedString);
 
                     break;
 

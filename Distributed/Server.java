@@ -7,17 +7,18 @@ import java.net.InetAddress;
 import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import Controller.FileIO;
 import java.io.*;
 
 import Model.Facility;
-
+import Controller.FacilityController;
 public class Server{
   // Server UDP socket runs at this port
   // Make sure this port is constant with final statics
+
   public final static int SERVICE_PORT=50001;
-private static Integer[][] integers;
  
   public static void main(String[] args) throws IOException{
     try{
@@ -44,40 +45,40 @@ private static Integer[][] integers;
       
 
       //Get the facility data from facilities.txt
-      ArrayList<Facility> Facilitylistreceive= new ArrayList<Facility>();
-      try{
-        Facilitylistreceive = (ArrayList<Facility>) FileIO.readObject("facilities.txt");
-        }
-        catch (ClassNotFoundException | IOException e) {
-            System.out.println("File is missing. Please try again");
-        }
+      ArrayList<Facility> Facilitylist= new ArrayList<Facility>();
+     
+      Facilitylist = FileIO.getFacilityData();
+      
 
       String sendString = "";
       //requestID = number that user chose for operation.
       int requestId = Character.getNumericValue(receivedData.charAt(0));
       switch(requestId){
         case 1: //1. Check Facility Availibility.
-
+        
           int facilityTypeId = Character.getNumericValue(receivedData.charAt(1));
           int facilitySelection = Character.getNumericValue(receivedData.charAt(2));
-          int numDays = Character.getNumericValue(receivedData.charAt(3));
-      //Filter and create a new arraylist to filter and store relevent facilities
-      ArrayList<Facility> filteredFacilityList= new ArrayList<Facility>();
-      for (Facility i: Facilitylistreceive){
-        if((i.getFacilityType()==facilityTypeId)){
-          filteredFacilityList.add(i);
-        }
-      }
-      
-      Facility targetFacility = filteredFacilityList.get(facilitySelection-1); 
+          
+          List<Integer> dayOfWeek = new ArrayList<Integer>(); 
+          int numDaysHead = Character.getNumericValue(receivedData.charAt(3));
+          dayOfWeek.add(numDaysHead);
+          int numDaysTail = Character.getNumericValue(receivedData.charAt(4));
+          dayOfWeek.add(numDaysTail);
+          
+
+   
       //facilitySelection = 1 :First facility in the respective facility type
 
-      HashMap<Integer, Integer[][]> availability = targetFacility.getAvailability();
-      Integer[][] timeslot = availability.get(numDays);
-      for (Integer[] slot: timeslot){
-        if (slot[0] == 0)
-        sendString = sendString.concat(slot[1]+ "\n");
-       }
+      List<Integer[][]> Timeslots = FacilityController.queryAvailability(dayOfWeek,facilityTypeId,facilitySelection, Facilitylist); 
+      //List of relevent day:timeslots
+      
+      for (Integer[][] slots:Timeslots){
+        for (Integer[] slot: slots){
+          if (slot[0] == 0)
+          sendString = sendString.concat(slot[1]+ "\n");
+         }
+      }
+  
       //Create String to send back to user.
       // for (Facility i: filteredFacilityList){
       //   sendString = sendString.concat(i.getFacilityName()+ "\n");

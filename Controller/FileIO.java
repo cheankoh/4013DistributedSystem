@@ -76,4 +76,15 @@ public class FileIO {
       }
       return null;
    }
+
+   public static ArrayList<Facility> getFacilityData() {
+      ArrayList<Facility> Facilitylistreceive = null;
+      try{
+         Facilitylistreceive = (ArrayList<Facility>) FileIO.readObject("facilities.txt");
+         }
+         catch (ClassNotFoundException | IOException e) {
+             System.out.println("File is missing. Please try again");
+         }
+         return Facilitylistreceive;
+   }
 }
