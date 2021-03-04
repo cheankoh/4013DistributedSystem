@@ -50,7 +50,7 @@ public class Client{
         
         return messageBuffer; 
     }
-
+    
     //Main thread of the client
     public static void main(String[] args) throws IOException{
         System.out.println("====================================");
@@ -84,18 +84,40 @@ public class Client{
             switch(choice){
                 case 1:
                     System.out.println("CHECK FACILITY AVAILIBILITY");
-                    System.out.print("Please enter facility: ");
-                    String facility = sc.next();
+                    System.out.println("Please enter facility type: ");
+                    System.out.println("====================================");
+                    System.out.println("1. Learning Pod");
+                    System.out.println("2. Lecture Theatre");
+                    System.out.println("3. Tutorial Room");
+                    System.out.println("4. Language Room");
+                    System.out.println("====================================");
+
+                    int facility = sc.nextInt();
+
+                    switch(facility){
+                        case 1:     System.out.println("Please select facility number: ");
+                                    System.out.println("====================================");
+                                    System.out.println("1. Learning Pod 1");
+                                    System.out.println("2. Learning Pod 2");
+                                    System.out.println("====================================");
+                    }
+                    int facilityNumber = sc.nextInt();
+
                     System.out.print("Please enter days [ e.g. 1-7 (range) or 1 (number) ]: ");
                     //TODO Delimt by "-"
                     String date = sc.next();
 
                     //Marshal String and String to byte array form then stick them together
-                    byte[] a = facility.getBytes();
-                    byte[] b = date.getBytes();
-                    byte[] request = new byte[a.length + b.length];
-                    System.arraycopy(a, 0, request, 0, a.length);
-                    System.arraycopy(b, 0, request, a.length, b.length);
+
+                    byte[] requestID = Integer.toString(choice).getBytes();
+                    byte[] facilityType = Integer.toString(facility).getBytes();
+                    byte[] facilitySelection = Integer.toString(facilityNumber).getBytes();
+                    byte[] numDayOfBooking = date.getBytes();
+                    byte[] request = new byte[requestID.length + facilityType.length+ facilitySelection.length+numDayOfBooking.length];
+                    System.arraycopy(requestID, 0, request, 0, requestID.length);
+                    System.arraycopy(facilityType, 0, request, requestID.length, facilityType.length);
+                    System.arraycopy(facilitySelection, 0, request, requestID.length+facilityType.length, facilitySelection.length);
+                    System.arraycopy(numDayOfBooking, 0, request, requestID.length+facilityType.length+facilitySelection.length, numDayOfBooking.length);
 
                     //Send
                     client.send(request);
@@ -114,7 +136,7 @@ public class Client{
                     // Do we allow bulk booking ?
                     System.out.println("BOOK FACILITY");
                     System.out.print("Please enter facility: ");
-                    facility = sc.next();
+                    facility = sc.nextInt();
                     System.out.print("Please enter day: ");
                     date = sc.next();
                     System.out.print("Please enter start time: ");
@@ -141,7 +163,7 @@ public class Client{
                 case 4:
                     System.out.println("MONITOR FACILITY AVAILIBILITY");
                     System.out.print("Please enter facility: ");
-                    facility = sc.next();
+                    facility = sc.nextInt();
                     System.out.print("Please enter duration (secs): ");
                     int duration = sc.nextInt();
 
