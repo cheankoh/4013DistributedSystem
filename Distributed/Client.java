@@ -56,7 +56,7 @@ public class Client{
         System.out.println("====================================");
         System.out.println("Welcome to Facility Booking System !");
         // Construct client and test sending dummies through to server
-        String host = "localhost";
+        String host = "10.27.39.247";
         int port = 50001;
         Client client = new Client(host,port);
 
