@@ -96,7 +96,35 @@ public class Client{
         return messageBuffer; 
     }
 
-    //Main thread of the client
+    //Wrap send and receive together for reusibility
+    public byte[] routineSendReceive(byte[] message) throws IOException, SocketTimeoutException
+    {   
+        int numTimeouts = 0;
+        int maxTimeouts = 5; // @TODO: Move to constants
+
+        //dummy byte array of length 0
+        byte[] response = new byte[0];
+        send(message);
+
+        //Retry if timeout up until a max value
+        while (numTimeouts < maxTimeouts){
+            try{
+                response = receive();
+                break;
+            }
+            catch (SocketTimeoutException e){
+                System.out.println("[ERROR][REQUEST TIMEOUT. RETRYING ...]");
+                numTimeouts++;
+            }
+        }
+
+        if (response.length == 0)
+            System.out.println("[ERROR][SERVER UNCONTACTABLE]");
+
+        return response;
+
+    }
+
     public static void main(String[] args) throws IOException{
         System.out.println("====================================");
         System.out.println("Welcome to Facility Booking System !");
@@ -189,11 +217,8 @@ public class Client{
                     System.arraycopy(facilitySelection, 0, request, requestID.length+facilityType.length, facilitySelection.length);
                     System.arraycopy(dayOfBooking, 0, request, requestID.length+facilityType.length+facilitySelection.length, dayOfBooking.length);
 
-                    //Send
-                    client.send(request);
-
-                    //Receive
-                    byte[] response = client.receive();
+                    //Send and Receive
+                    byte[] response = client.routineSendReceive(request);
 
                     //Demarshall
                     String receivedString = new String(response, StandardCharsets.UTF_8);
