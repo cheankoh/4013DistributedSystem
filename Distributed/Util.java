@@ -1,5 +1,7 @@
 package Distributed;
 
+import javax.lang.model.util.ElementScanner6;
+
 public class Util {
     // Implements marshalling and demarshalling logic
     // To run anywhere, should be of public static type
@@ -59,13 +61,19 @@ public class Util {
         return stringValue;
     }
 
-    //Marshalling a datastruct
+    //Marshall a boolean
+    public static byte[] marshallBool(boolean x){
+        byte[] arrayByte = new byte[]{x ? (byte)1 : (byte)0};
+        return arrayByte;
+    }
 
-    //Demarshalling a datastruct
+    //Demarshall a boolean
+    public static boolean unmarshallBool(byte[] x){
+        if ((int)(x[0]) == 1) return true;
+        else return false;
+    }
 
-    //Marshalling a class
-
-    //Demarshaling a datastruct
+    //Marshall an object + Demarshall : TODO if needed.
 
     //Test
     public static void main(String[] args)

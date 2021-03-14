@@ -5,8 +5,10 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
+import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 import java.util.Scanner;
+import java.util.Random;
 
 //JUST TO TEST
 import java.nio.charset.StandardCharsets;
@@ -16,13 +18,48 @@ public class Client{
     private DatagramSocket clientSocket;
     private InetAddress hostIP;
     private int hostPort;
-    //TODO: ADD IN OTHER STUFFS LIKE TIMEOUT, INVOCATION SEMANTICS, etc
+    /* Request timeout in sec*/
+    private int requestTimeout;
+    /* invocation semantic, if True at most once, otherwise
+    assumed at least once used*/
+    private boolean atMostOnce;
+    /* Error simulation */
+    private double failRate;
+    private boolean simulateFail;
 
+    Random rand = new Random();
+
+
+    public Client(String hostIP, int hostPort, int timeout, boolean isAtMostOnceSemantic,
+                    boolean simulateFail, double failRate) throws SocketException, UnknownHostException
+    {
+        this.clientSocket = new DatagramSocket();
+        this.hostIP = InetAddress.getByName(hostIP);
+        this.hostPort = hostPort;
+        this.requestTimeout = timeout;
+        this.atMostOnce = isAtMostOnceSemantic;
+        this.simulateFail = simulateFail;
+        if (simulateFail){
+            this.failRate = failRate;
+        }
+        else{
+            this.failRate = 0.0;
+        }
+    }
+
+    // Simplified constructor //
     public Client(String hostIP, int hostPort) throws SocketException, UnknownHostException
     {
         this.clientSocket = new DatagramSocket();
         this.hostIP = InetAddress.getByName(hostIP);
         this.hostPort = hostPort;
+        // Default timeout is 1 sec
+        this.requestTimeout = 1;
+        // Default invocation semantics is at least once
+        this.atMostOnce = false;
+        //Default error simulation - error free
+        this.simulateFail = false;
+        this.failRate = 0.0;
     }
 
     //TODO: Add setters for other attributes when added.
@@ -30,28 +67,64 @@ public class Client{
     //Sending a MARSHALLED byte array over the server
     public void send(byte[] message) throws IOException
     {
+        //If error and then don't bother sending anything
+        if (this.simulateFail && rand.nextFloat() <= this.failRate){
+            System.out.println("[INFO][SIMULATING DROPPING OF REQUEST]");
+            return;
+        }
         //Create a datagram packet before sending
         DatagramPacket sendingPacket = new DatagramPacket(message, message.length, this.hostIP, this.hostPort);
         this.clientSocket.send(sendingPacket);
+        System.out.println("[INFO][SENT A MESSAGE TO SERVER]");
     }
 
     //Receiving a MARSHALLED byte array over the UDP network
-    public byte[] receive() throws IOException
+    public byte[] receive() throws IOException, SocketTimeoutException
     {
         // TODO: How to determine what is the length of the receiving packet
-        // TODO: So that we can create the buffere accordingly
-        
-        // Hard code first. We may assume that only server send message to a client
+        // Hard code first - Best practice is to keep to one UDP and assume max possible size (waste still better)
         byte[] messageBuffer = new byte[1024];
         DatagramPacket receivingPacket = new DatagramPacket(messageBuffer, messageBuffer.length);
         
+        //Timeout in milliseconds
+        clientSocket.setSoTimeout(this.requestTimeout*1000);
+        
         //Receive
         clientSocket.receive(receivingPacket);
+        System.out.println("[INFO][RECEIVED REPLY BY SERVER]");
         
         return messageBuffer; 
     }
 
-    //Main thread of the client
+    //Wrap send and receive together for reusibility
+    public byte[] routineSendReceive(byte[] message) throws IOException, SocketTimeoutException
+    {   
+        int numTimeouts = 0;
+        int maxTimeouts = 5; // @TODO: Move to constants
+
+        //dummy byte array of length 0
+        byte[] response = new byte[0];
+        send(message);
+
+        //Retry if timeout up until a max value
+        while (numTimeouts < maxTimeouts){
+            try{
+                response = receive();
+                break;
+            }
+            catch (SocketTimeoutException e){
+                System.out.println("[ERROR][REQUEST TIMEOUT. RETRYING ...]");
+                numTimeouts++;
+            }
+        }
+
+        if (response.length == 0)
+            System.out.println("[ERROR][SERVER UNCONTACTABLE]");
+
+        return response;
+
+    }
+
     public static void main(String[] args) throws IOException{
         int userID=0;
         int facility =0 ; //Facility type
@@ -75,9 +148,15 @@ public class Client{
         String host = "172.20.132.25";
         // String host = "10.27.39.247";
         int port = 50001;
-        Client client = new Client(host,port);
+        int timeout = 1;
+        boolean atMostOnce = false;
+        boolean simulateFail = true;
+        double probFailure = 0.2;
 
-        //TODO: Do a console IO stuffs here
+        //Client client = new Client(host,port);
+        Client client = new Client(host,port,timeout,atMostOnce,simulateFail,probFailure);
+
+        //Main console flow
         boolean quit = false;
         int choice;
         Scanner sc = new Scanner(System.in);
@@ -154,11 +233,8 @@ public class Client{
                     System.arraycopy(facilitySelection, 0, request, requestID.length+facilityType.length, facilitySelection.length);
                     System.arraycopy(dayOfBooking, 0, request, requestID.length+facilityType.length+facilitySelection.length, dayOfBooking.length);
 
-                    //Send
-                    client.send(request);
-                    System.out.println("sent to server");
-                    //Receive
-                    byte[] response = client.receive();
+                    //Send and Receive
+                    byte[] response = client.routineSendReceive(request);
 
                     //Demarshall
                     String receivedString = new String(response, StandardCharsets.UTF_8);
@@ -326,6 +402,7 @@ public class Client{
                 case 7:
                     System.out.println("SHUTTING DOWN");
                     quit = true;
+                    sc.close();
                     //Close the client socket
                     client.clientSocket.close();
                     System.out.println("... DONE");
