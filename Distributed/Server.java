@@ -118,6 +118,16 @@ public class Server {
   
         int res = FacilityController.bookFacility(Facilitylist,facilityTypeId,facilitySelection,dayofWeek,startTime,endTime,userID);
         System.out.println("res: "+ res);
+
+        if(res==1){
+          sendString = "Booking Succesful";
+        }else if(res==2){
+          sendString = "Booking Failed: Wrong ID";
+        }else{
+          sendString = "Booking Failed: Slot not available";
+        }
+      
+        break;
         // res = 1 (Booking Succesful)
         // res = 2 (Booking Failed: Wrong ID)
         // res = 3 (Booking Failed: Slot not available)
