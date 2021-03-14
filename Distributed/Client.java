@@ -53,10 +53,27 @@ public class Client{
 
     //Main thread of the client
     public static void main(String[] args) throws IOException{
+        int userID=0;
+        int facility =0 ; //Facility type
+        int facilityNumber = 0; //Facility Selection
+        int start = 0; //Booking start time
+        int stop = 0; //Booking stop time
+        int dayOfWeek = 0;
+        String date;
+        byte[] requestID;
+        byte[] facilityType;
+        byte[] facilitySelection;
+        byte[] dayOfBooking;
+        byte[] request;
+        byte[] startTime;
+        byte[] endTime;
+        byte[] daySelection;
+        byte[] userId;
         System.out.println("====================================");
         System.out.println("Welcome to Facility Booking System !");
         // Construct client and test sending dummies through to server
-        String host = "10.27.39.247";
+        String host = "172.20.132.25";
+        // String host = "10.27.39.247";
         int port = 50001;
         Client client = new Client(host,port);
 
@@ -92,7 +109,7 @@ public class Client{
                     System.out.println("4. Language Room");
                     System.out.println("====================================");
 
-                    int facility = sc.nextInt();
+                    facility = sc.nextInt();
 
                     switch(facility){
                         case 1:     System.out.println("Please select facility number: ");
@@ -119,19 +136,19 @@ public class Client{
                                     System.out.println("2. Language Room 2");
                                     System.out.println("====================================");
                                     break;                    }
-                    int facilityNumber = sc.nextInt();
+                    facilityNumber = sc.nextInt();
 
                     System.out.print("Please enter days [ e.g. 1-7 (range) or 1 (number) ]: ");
                     //TODO Delimt by "-"
-                    String date = sc.next();
+                    date = sc.next();
                     date = date.replace("-","");
                     //Marshal String and String to byte array form then stick them together
 
-                    byte[] requestID = Integer.toString(choice).getBytes();
-                    byte[] facilityType = Integer.toString(facility).getBytes();
-                    byte[] facilitySelection = Integer.toString(facilityNumber).getBytes();
-                    byte[] dayOfBooking = date.getBytes();
-                    byte[] request = new byte[requestID.length + facilityType.length+ facilitySelection.length+dayOfBooking.length];
+                    requestID = Integer.toString(choice).getBytes();
+                    facilityType = Integer.toString(facility).getBytes();
+                    facilitySelection = Integer.toString(facilityNumber).getBytes();
+                    dayOfBooking = date.getBytes();
+                    request = new byte[requestID.length + facilityType.length+ facilitySelection.length+dayOfBooking.length];
                     System.arraycopy(requestID, 0, request, 0, requestID.length);
                     System.arraycopy(facilityType, 0, request, requestID.length, facilityType.length);
                     System.arraycopy(facilitySelection, 0, request, requestID.length+facilityType.length, facilitySelection.length);
@@ -139,7 +156,7 @@ public class Client{
 
                     //Send
                     client.send(request);
-
+                    System.out.println("sent to server");
                     //Receive
                     byte[] response = client.receive();
 
@@ -153,14 +170,116 @@ public class Client{
                     // Assumption can only book 1 day and max 2 slots ?
                     // Do we allow bulk booking ?
                     System.out.println("BOOK FACILITY");
-                    System.out.print("Please enter facility: ");
+                    System.out.println("Please enter facility type: ");
+                    System.out.println("====================================");
+                    System.out.println("1. Learning Pod");
+                    System.out.println("2. Lecture Theatre");
+                    System.out.println("3. Tutorial Room");
+                    System.out.println("4. Language Room");
+                    System.out.println("====================================");
                     facility = sc.nextInt();
+
+                    switch(facility){
+                        case 1:     System.out.println("Please select facility number: ");
+                                    System.out.println("====================================");
+                                    System.out.println("1. Learning Pod 1");
+                                    System.out.println("2. Learning Pod 2");
+                                    System.out.println("====================================");
+                                    break;
+                        case 2:     System.out.println("Please select facility number: ");
+                                    System.out.println("====================================");
+                                    System.out.println("1. Lecture Theatre 1");
+                                    System.out.println("2. Lecture Theatre 2");
+                                    System.out.println("====================================");
+                                    break;                    
+                        case 3:     System.out.println("Please select facility number: ");
+                                    System.out.println("====================================");
+                                    System.out.println("1. Tutorial Room 1");
+                                    System.out.println("2. Tutorial Room 2");
+                                    System.out.println("====================================");
+                                    break;                    
+                        case 4:     System.out.println("Please select facility number: ");
+                                    System.out.println("====================================");
+                                    System.out.println("1. Language Room 1");
+                                    System.out.println("2. Language Room 2");
+                                    System.out.println("====================================");
+                                    break;                    }
+                    facilityNumber = sc.nextInt();
                     System.out.print("Please enter day: ");
-                    date = sc.next();
+                    System.out.println("====================================");
+                    System.out.println("1. Monday");
+                    System.out.println("2. Tuesday");
+                    System.out.println("3. Wednesday");
+                    System.out.println("4. Thursday");
+                    System.out.println("5. Friday");
+                    System.out.println("6. Saturday");
+                    System.out.println("7. Sunday");
+                    System.out.println("====================================");
+                    dayOfWeek = sc.nextInt();
                     System.out.print("Please enter start time: ");
-                    float start = sc.nextFloat();
+                    System.out.println("====================================");
+                    System.out.println("1. 8:00 am");
+                    System.out.println("2. 8:30 am");
+                    System.out.println("3. 9:00 am");
+                    System.out.println("4. 10:00 am");
+                    System.out.println("5. 10:30 am");
+                    System.out.println("6. 11:00 am");
+                    System.out.println("7. 11:30 am");
+                    System.out.println("8. 12:00 pm");
+                    System.out.println("9. 12:30 pm");
+                    System.out.println("10. 1:00 pm");
+                    System.out.println("11. 1:30 pm");
+                    System.out.println("12. 2:00 pm");
+                    System.out.println("13. 2:30 pm");
+                    System.out.println("14. 3:00 pm");
+                    System.out.println("15. 3:30 pm");
+                    System.out.println("16. 4:00 pm");
+                    System.out.println("17. 4:30 pm");
+                    System.out.println("====================================");
+                    start = sc.nextInt();
                     System.out.print("Please enter end time: ");
-                    float stop = sc.nextFloat();
+                    System.out.println("====================================");
+     
+                    System.out.println("1. 8:30 am");
+                    System.out.println("2. 9:00 am");
+                    System.out.println("3. 10:00 am");
+                    System.out.println("4. 10:30 am");
+                    System.out.println("5. 11:00 am");
+                    System.out.println("6. 11:30 am");
+                    System.out.println("7. 12:00 pm");
+                    System.out.println("8. 12:30 pm");
+                    System.out.println("9. 1:00 pm");
+                    System.out.println("10. 1:30 pm");
+                    System.out.println("11. 2:00 pm");
+                    System.out.println("12. 2:30 pm");
+                    System.out.println("13. 3:00 pm");
+                    System.out.println("14. 3:30 pm");
+                    System.out.println("15. 4:00 pm");
+                    System.out.println("16. 4:30 pm");
+                    System.out.println("17. 5:00 pm");
+                    System.out.println("====================================");
+                    stop = sc.nextInt();
+
+                    requestID = Integer.toString(choice).getBytes();
+                    facilityType = Integer.toString(facility).getBytes();
+                    facilitySelection = Integer.toString(facilityNumber).getBytes();
+                    daySelection = Integer.toString(dayOfWeek).getBytes();
+                    startTime = Integer.toString(start).getBytes();
+                    endTime = Integer.toString(stop).getBytes();
+                    userId = Integer.toString(userID).getBytes();
+                    request = new byte[requestID.length + facilityType.length+ facilitySelection.length+daySelection.length+startTime.length+endTime.length+ userId.length];
+                    System.arraycopy(requestID, 0, request, 0, requestID.length);
+                    System.arraycopy(facilityType, 0, request, requestID.length, facilityType.length);
+                    System.arraycopy(facilitySelection, 0, request, requestID.length+facilityType.length, facilitySelection.length);
+                    System.arraycopy(daySelection, 0, request, requestID.length+facilityType.length+facilitySelection.length, daySelection.length);
+                    System.arraycopy(startTime, 0, request, requestID.length+facilityType.length+facilitySelection.length+daySelection.length, startTime.length);
+                    System.arraycopy(endTime, 0, request, requestID.length+facilityType.length+facilitySelection.length+daySelection.length+startTime.length, endTime.length);
+                    System.arraycopy(userId, 0, request, requestID.length+facilityType.length+facilitySelection.length+daySelection.length+startTime.length+endTime.length, userId.length);
+                    client.send(request);
+                    System.out.println("sent to server");
+
+
+                    // Parameters: facility id, start time, stop time
 
                     // Next steps same as above
                     // TODO Marshal float -> byte

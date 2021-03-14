@@ -87,4 +87,34 @@ public class FileIO {
          }
          return Facilitylistreceive;
    }
+
+   public static void storeFacilityData(ArrayList<Facility> fac) {
+      try {
+         ObjectOutputStream oos = getObjectOutputStream("facilities.txt");
+         oos.writeObject(fac);
+      } catch (IOException e) {			
+         System.out.println(e.getMessage());
+      }
+   }
+   public static ArrayList<Booking> getBookingData() {
+      ArrayList<Booking> Bookingslistreceive = null;
+      try{
+         Bookingslistreceive = (ArrayList<Booking>) FileIO.readObject("bookings.txt");
+         }
+         catch (ClassNotFoundException | IOException e) {
+             System.out.println("File is missing. Please try again");
+         }
+         return Bookingslistreceive;
+   }
+
+   public static void storeBookingData(ArrayList<Booking> booking) {
+      try {
+         ObjectOutputStream oos = getObjectOutputStream("bookings.txt");
+         oos.writeObject(booking);
+      } catch (IOException e) {			
+         System.out.println(e.getMessage());
+      }
+   }
+
+   
 }
