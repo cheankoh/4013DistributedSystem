@@ -15,7 +15,7 @@ class DataFactory{
 
 
     public static void main(String[] args) {
-    Integer timeslot[][] = {{0,800},{0,830},{0,900},{0,930},{0,1000},{0,1030},{0,1100},{0,1130},{0,1200},{0,1230},{0,1300},{0,1330},{0,1400},{0,1430},{0,1500},{0,1530},{0,1600},{0,1230},{0,1630},{0,1700}};
+    Integer timeslot[][] = {{0,800},{0,830},{0,900},{0,930},{0,1000},{0,1030},{0,1100},{0,1130},{0,1200},{0,1230},{0,1300},{0,1330},{0,1400},{0,1430},{0,1500},{0,1530},{0,1600},{0,1630},{0,1700}};
 
     HashMap<Integer, Integer[][]> avail = new HashMap<Integer, Integer[][]>();
     avail.put(1, timeslot);
@@ -85,7 +85,10 @@ class DataFactory{
         System.out.println("File not found. please try again.");
     }
     
+        // ArrayList<Booking> booking = new ArrayList<Booking>();
+        // FileIO.storeBookingData(booking);
 
+    
     // ArrayList<Facility> Facilitylistreceive= new ArrayList<Facility>();
 
     // try{

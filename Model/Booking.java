@@ -1,14 +1,15 @@
 package Model;
 import java.util.ArrayList;
+import java.io.Serializable;
 import java.time.*;
 
-public class Booking {
+public class Booking implements Serializable{
 
     private int userID;
     private int facilityID;
     private int bookingID;
     private String date;
-    private ArrayList<Double> timing;
+    private ArrayList<Integer> timing;
 
 
 
@@ -45,11 +46,11 @@ public class Booking {
         this.date = date;
     }
 
-    public ArrayList<Double> getTiming() {
+    public ArrayList<Integer> getTiming() {
         return timing;
     }
 
-    public void setTiming(ArrayList<Double> timing) {
+    public void setTiming(ArrayList<Integer> timing) {
         this.timing = timing;
     }
 
