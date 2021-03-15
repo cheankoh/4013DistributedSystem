@@ -17,7 +17,18 @@ import Controller.FacilityController;
 public class Server{
   // Server UDP socket runs at this port
   // Make sure this port is constant with final statics
+  private DatagramSocket serverSocket;
+  private int hostPort;
+  /* invocation semantic, if True at most once, otherwise
+  assumed at least once used*/
+  private boolean atMostOnce;
+  /* Error simulation */
+  private double failRate;
+  private boolean simulateFail;
 
+  // TODO: Some history data structure
+
+  //Constructor for server
   public final static int SERVICE_PORT=50001;
  
   public static void main(String[] args) throws IOException{

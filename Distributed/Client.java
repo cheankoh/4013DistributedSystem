@@ -68,7 +68,8 @@ public class Client{
     public void send(byte[] message) throws IOException
     {
         //If error and then don't bother sending anything
-        if (this.simulateFail && rand.nextFloat() <= this.failRate){
+        double randomProb = rand.nextDouble();
+        if (this.simulateFail && randomProb <= this.failRate){
             System.out.println("[INFO][SIMULATING DROPPING OF REQUEST]");
             return;
         }
@@ -81,11 +82,11 @@ public class Client{
     //Receiving a MARSHALLED byte array over the UDP network
     public byte[] receive() throws IOException, SocketTimeoutException
     {
-        // TODO: How to determine what is the length of the receiving packet
+        // TODO: How to determine what is the length of the receiving packet        
         // Hard code first - Best practice is to keep to one UDP and assume max possible size (waste still better)
         byte[] messageBuffer = new byte[1024];
         DatagramPacket receivingPacket = new DatagramPacket(messageBuffer, messageBuffer.length);
-        
+
         //Timeout in milliseconds
         clientSocket.setSoTimeout(this.requestTimeout*1000);
         
@@ -104,11 +105,11 @@ public class Client{
 
         //dummy byte array of length 0
         byte[] response = new byte[0];
-        send(message);
 
         //Retry if timeout up until a max value
         while (numTimeouts < maxTimeouts){
             try{
+                send(message);
                 response = receive();
                 break;
             }
@@ -216,7 +217,7 @@ public class Client{
                     System.arraycopy(facilityType, 0, request, requestID.length, facilityType.length);
                     System.arraycopy(facilitySelection, 0, request, requestID.length+facilityType.length, facilitySelection.length);
                     System.arraycopy(dayOfBooking, 0, request, requestID.length+facilityType.length+facilitySelection.length, dayOfBooking.length);
-
+                    
                     //Send and Receive
                     byte[] response = client.routineSendReceive(request);
 
