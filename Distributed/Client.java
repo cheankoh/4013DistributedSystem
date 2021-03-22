@@ -133,7 +133,9 @@ public class Client{
         int start = 0; //Booking start time
         int stop = 0; //Booking stop time
         int dayOfWeek = 0;
+        int bookingId= 0;
         String date;
+        String receivedString;
         byte[] requestID;
         byte[] facilityType;
         byte[] facilitySelection;
@@ -143,6 +145,9 @@ public class Client{
         byte[] endTime;
         byte[] daySelection;
         byte[] userId;
+        byte[] bookingID;
+        byte[] response;
+        byte[] offsetValue;
         System.out.println("====================================");
         System.out.println("Welcome to Facility Booking System !");
         // Construct client and test sending dummies through to server
@@ -217,13 +222,13 @@ public class Client{
                                     System.out.println("====================================");
                                     break;                    }
                     facilityNumber = sc.nextInt();
-
+                    
                     System.out.print("Please enter days [ e.g. 1-7 (range) or 1 (number) ]: ");
                     //TODO Delimt by "-"
                     date = sc.next();
                     date = date.replace("-","");
                     //Marshal String and String to byte array form then stick them together
-
+                    
                     requestID = Integer.toString(choice).getBytes();
                     facilityType = Integer.toString(facility).getBytes();
                     facilitySelection = Integer.toString(facilityNumber).getBytes();
@@ -235,10 +240,10 @@ public class Client{
                     System.arraycopy(dayOfBooking, 0, request, requestID.length+facilityType.length+facilitySelection.length, dayOfBooking.length);
                     
                     //Send and Receive
-                    byte[] response = client.routineSendReceive(request);
+                    response = client.routineSendReceive(request);
 
                     //Demarshall
-                    String receivedString = new String(response, StandardCharsets.UTF_8);
+                    receivedString = new String(response, StandardCharsets.UTF_8);
                     System.out.println("Response: \n" + receivedString);
 
                     break;
@@ -293,7 +298,7 @@ public class Client{
                     System.out.println("7. Sunday");
                     System.out.println("====================================");
                     dayOfWeek = sc.nextInt();
-                    System.out.print("Please enter start time: ");
+                    System.out.print("Please choose start time: ");
                     System.out.println("====================================");
                     System.out.println("1. 8:00 am");
                     System.out.println("2. 8:30 am");
@@ -352,10 +357,17 @@ public class Client{
                     System.arraycopy(startTime, 0, request, requestID.length+facilityType.length+facilitySelection.length+daySelection.length, startTime.length);
                     System.arraycopy(endTime, 0, request, requestID.length+facilityType.length+facilitySelection.length+daySelection.length+startTime.length, endTime.length);
                     System.arraycopy(userId, 0, request, requestID.length+facilityType.length+facilitySelection.length+daySelection.length+startTime.length+endTime.length, userId.length);
-                    client.send(request);
-                    System.out.println("sent to server");
+                    // client.send(request);
+                    // System.out.println("sent to server");
 
+                    //Send and Receive
+                    response = client.routineSendReceive(request);
 
+                    //Demarshall
+                    receivedString = new String(response, StandardCharsets.UTF_8);
+                    System.out.println("Response: \n" + receivedString);
+
+                    
                     // Parameters: facility id, start time, stop time
 
                     // Next steps same as above
@@ -365,9 +377,26 @@ public class Client{
                 case 3:
                     System.out.println("CHANGE BOOKING SLOT");
                     System.out.print("Please enter booking confirmation ID: ");
-                    String bookingId = sc.next();
+                    bookingId = sc.nextInt();
                     System.out.print("Please enter offset (+ delay - forward): ");
                     int offset = sc.nextInt();
+
+
+                    requestID = Integer.toString(choice).getBytes();
+                    bookingID = Integer.toString(bookingId).getBytes();
+                    offsetValue = Integer.toString(offset).getBytes();
+                    request = new byte[requestID.length + bookingID.length];
+                    System.arraycopy(requestID, 0, request, 0, requestID.length);
+                    System.arraycopy(bookingID, 0, request, requestID.length, bookingID.length);
+                    System.arraycopy(offsetValue, 0, request, requestID.length+bookingID.length, offsetValue.length);
+
+
+                    response = client.routineSendReceive(request);
+
+                    //Demarshall
+                    receivedString = new String(response, StandardCharsets.UTF_8);
+                    System.out.println("Response: \n" + receivedString);
+
 
                     // Next steps same as above
                     // TODO Marshal int -> byte
@@ -387,17 +416,50 @@ public class Client{
 
                 case 5:
                     System.out.println("CANCEL BOOKING");
-                    System.out.print("Please enter booking confirmation ID: ");
-                    bookingId = sc.next();
+                    System.out.print("Please enter booking ID: ");
+                    bookingId = sc.nextInt();
+
+                    
+                    requestID = Integer.toString(choice).getBytes();
+                    bookingID = Integer.toString(bookingId).getBytes();
+                    request = new byte[requestID.length + bookingID.length];
+                    System.arraycopy(requestID, 0, request, 0, requestID.length);
+                    System.arraycopy(bookingID, 0, request, requestID.length, bookingID.length);
+
+
+                    response = client.routineSendReceive(request);
+
+                    //Demarshall
+                    receivedString = new String(response, StandardCharsets.UTF_8);
+                    System.out.println("Response: \n" + receivedString);
+
                     break;
 
                 case 6:
                     System.out.println("EXTEND BOOKING SLOT");
                     System.out.print("Please enter booking confirmation ID: ");
-                    bookingId = sc.next();
+                    bookingId = sc.nextInt();
                     System.out.print("Please enter offset (+ extend - shorten): ");
                     offset = sc.nextInt();
+                    
 
+                    requestID = Integer.toString(choice).getBytes();
+                    bookingID = Integer.toString(bookingId).getBytes();
+                    offsetValue = Integer.toString(offset).getBytes();
+                    request = new byte[requestID.length + bookingID.length];
+                    System.arraycopy(requestID, 0, request, 0, requestID.length);
+                    System.arraycopy(bookingID, 0, request, requestID.length, bookingID.length);
+                    System.arraycopy(offsetValue, 0, request, requestID.length+bookingID.length, offsetValue.length);
+
+
+
+                    response = client.routineSendReceive(request);
+
+                    //Demarshall
+                    receivedString = new String(response, StandardCharsets.UTF_8);
+                    System.out.println("Response: \n" + receivedString);
+
+                    
                     break;
 
                 case 7:

@@ -8,7 +8,7 @@ public class Booking implements Serializable{
     private int userID;
     private int facilityID;
     private int bookingID;
-    private String date;
+    private int date;
     private ArrayList<Integer> timing;
 
 
@@ -38,11 +38,11 @@ public class Booking implements Serializable{
         this.bookingID = bookingID;
     }
 
-    public String getDate() {
+    public int getDate() {
         return date;
     }
 
-    public void setDate(String date) {
+    public void setDate(int date) {
         this.date = date;
     }
 
