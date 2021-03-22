@@ -18,43 +18,8 @@ import Controller.FacilityController;
 public class Server {
   // Server UDP socket runs at this port
   // Make sure this port is constant with final statics
-  private DatagramSocket serverSocket;
-  private int hostPort;
-  /* invocation semantic, if True at most once, otherwise
-  assumed at least once used*/
-  private boolean atMostOnce;
-  /* Error simulation */
-  private double failRate;
-  private boolean simulateFail;
 
-  // TODO: Some history data structure
-
-  //Constructor for server
-  public final static int SERVICE_PORT=50001;
- 
-  public static void main(String[] args) throws IOException{
-    try{
-      // Instantiate a new DatagramSocket to receive responses from the client
-      // Open a UDP socket at the above service port
-      DatagramSocket serverSocket = new DatagramSocket(SERVICE_PORT);
-      
-      /* Create buffers to hold sending and receiving data.
-      It temporarily stores data in case of communication delays */
-      byte[] receivingDataBuffer = new byte[1024];
-      byte[] sendingDataBuffer = new byte[1024];
-      
-      /* Instantiate a UDP packet to store the 
-      client data using the buffer for receiving data*/
-      DatagramPacket inputPacket = new DatagramPacket(receivingDataBuffer, receivingDataBuffer.length);
-      System.out.println("Waiting for a client to connect...");
-      
-      // Receive data from the client and store in inputPacket
-      serverSocket.receive(inputPacket);
-      
-      // Printing out the client sent data
-      String receivedData = new String(inputPacket.getData());
-      System.out.println("Sent from the client: "+receivedData);
-      
+  public final static int SERVICE_PORT = 50001;
 
   public static void main(String[] args) throws IOException {
    
