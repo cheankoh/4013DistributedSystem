@@ -12,6 +12,8 @@ import java.util.Random;
 
 //JUST TO TEST
 import java.nio.charset.StandardCharsets;
+//Marshal-Demarshal
+import Distributed.Util;
 
 public class Client{
     /* Attributes for client */
@@ -136,11 +138,9 @@ public class Client{
         int bookingId= 0;
         String date;
         String receivedString;
-        byte[] requestID;
         byte[] facilityType;
         byte[] facilitySelection;
         byte[] dayOfBooking;
-        byte[] request;
         byte[] startTime;
         byte[] endTime;
         byte[] daySelection;
@@ -148,6 +148,8 @@ public class Client{
         byte[] bookingID;
         byte[] response;
         byte[] offsetValue;
+        byte[] request;
+
         System.out.println("====================================");
         System.out.println("Welcome to Facility Booking System !");
         // Construct client and test sending dummies through to server
@@ -157,6 +159,14 @@ public class Client{
         boolean atMostOnce = false;
         boolean simulateFail = true;
         double probFailure = 0.2;
+        int messageCounter = 0;
+
+        //About payload to create a message
+        byte communicationMethod;
+        byte requestType;
+        int messageID;
+        byte[] payload;
+        int payloadSize;
 
         //Client client = new Client(host,port);
         Client client = new Client(host,port,timeout,atMostOnce,simulateFail,probFailure);
@@ -226,22 +236,31 @@ public class Client{
                     //TODO Delimt by "-"
                     date = sc.next();
                     date = date.replace("-","");
+
                     //Marshal String and String to byte array form then stick them together
-                    
-                    requestID = Integer.toString(choice).getBytes();
-                    facilityType = Integer.toString(facility).getBytes();
-                    facilitySelection = Integer.toString(facilityNumber).getBytes();
-                    dayOfBooking = date.getBytes();
-                    request = new byte[requestID.length + facilityType.length+ facilitySelection.length+dayOfBooking.length];
-                    System.arraycopy(requestID, 0, request, 0, requestID.length);
-                    System.arraycopy(facilityType, 0, request, requestID.length, facilityType.length);
-                    System.arraycopy(facilitySelection, 0, request, requestID.length+facilityType.length, facilitySelection.length);
-                    System.arraycopy(dayOfBooking, 0, request, requestID.length+facilityType.length+facilitySelection.length, dayOfBooking.length);
+                    //First 2B
+                    communicationMethod = 1;
+                    requestType = (byte)((choice));
+                    //Message ID = current message sent number
+                    messageID = messageCounter;
+                    //Payload - Marshal step
+                    facilityType = Util.marshall(facility);
+                    facilitySelection = Util.marshall(facilityNumber);
+                    dayOfBooking = Util.marshall(date);
+                    //Form payload
+                    payloadSize = facilityType.length + facilitySelection.length + dayOfBooking.length;
+                    payload = new byte[payloadSize];
+                    System.arraycopy(facilityType, 0, payload, 0, facilityType.length);
+                    System.arraycopy(facilitySelection, 0, payload, facilityType.length, facilitySelection.length);
+                    System.arraycopy(dayOfBooking, 0, payload, facilityType.length+facilitySelection.length, dayOfBooking.length);
+
+                    //Create Message
+                    request = Util.getMessageByte(communicationMethod, requestType, messageID, payloadSize, payload);
                     
                     //Send and Receive
                     response = client.routineSendReceive(request);
 
-                    //Demarshall
+                    //TODO: Demarshall handling
                     receivedString = new String(response, StandardCharsets.UTF_8);
                     System.out.println("Response: \n" + receivedString);
 
@@ -340,37 +359,42 @@ public class Client{
                     System.out.println("17. 5:00 pm");
                     System.out.println("====================================");
                     stop = sc.nextInt();
+                    
+                    //First 2B
+                    communicationMethod = 1;
+                    requestType = (byte)((choice));
+                    //Message ID = current message sent number
+                    messageID = messageCounter;
+                    //Payload - Marshal step
+                    facilityType = Util.marshall(facility);
+                    facilitySelection = Util.marshall(facilityNumber);
+                    daySelection = Util.marshall(dayOfWeek);
+                    startTime = Util.marshall(start);
+                    endTime = Util.marshall(stop);
+                    userId = Util.marshall(userID);
+                    //Form payload
+                    payloadSize = facilityType.length+ facilitySelection.length+daySelection.length+startTime.length+endTime.length+ userId.length;
+                    payload = new byte[payloadSize];
+                    System.arraycopy(facilityType, 0, payload, 0, facilityType.length);
+                    System.arraycopy(facilitySelection, 0, payload, facilityType.length, facilitySelection.length);
+                    System.arraycopy(daySelection, 0, payload, facilityType.length+facilitySelection.length, daySelection.length);
+                    System.arraycopy(startTime, 0, payload, facilityType.length+facilitySelection.length+daySelection.length, startTime.length);
+                    System.arraycopy(endTime, 0, payload, facilityType.length+facilitySelection.length+daySelection.length+startTime.length, endTime.length);
+                    System.arraycopy(userId, 0, payload, facilityType.length+facilitySelection.length+daySelection.length+startTime.length+endTime.length, userId.length);
 
-                    requestID = Integer.toString(choice).getBytes();
-                    facilityType = Integer.toString(facility).getBytes();
-                    facilitySelection = Integer.toString(facilityNumber).getBytes();
-                    daySelection = Integer.toString(dayOfWeek).getBytes();
-                    startTime = Integer.toString(start).getBytes();
-                    endTime = Integer.toString(stop).getBytes();
-                    userId = Integer.toString(userID).getBytes();
-                    request = new byte[requestID.length + facilityType.length+ facilitySelection.length+daySelection.length+startTime.length+endTime.length+ userId.length];
-                    System.arraycopy(requestID, 0, request, 0, requestID.length);
-                    System.arraycopy(facilityType, 0, request, requestID.length, facilityType.length);
-                    System.arraycopy(facilitySelection, 0, request, requestID.length+facilityType.length, facilitySelection.length);
-                    System.arraycopy(daySelection, 0, request, requestID.length+facilityType.length+facilitySelection.length, daySelection.length);
-                    System.arraycopy(startTime, 0, request, requestID.length+facilityType.length+facilitySelection.length+daySelection.length, startTime.length);
-                    System.arraycopy(endTime, 0, request, requestID.length+facilityType.length+facilitySelection.length+daySelection.length+startTime.length, endTime.length);
-                    System.arraycopy(userId, 0, request, requestID.length+facilityType.length+facilitySelection.length+daySelection.length+startTime.length+endTime.length, userId.length);
-                    // client.send(request);
-                    // System.out.println("sent to server");
+                    //Create Message
+                    request = Util.getMessageByte(communicationMethod, requestType, messageID, payloadSize, payload);
 
                     //Send and Receive
                     response = client.routineSendReceive(request);
 
-                    //Demarshall
+                    //TODO Demarshall
                     receivedString = new String(response, StandardCharsets.UTF_8);
                     System.out.println("Response: \n" + receivedString);
 
                     
                     // Parameters: facility id, start time, stop time
 
-                    // Next steps same as above
-                    // TODO Marshal float -> byte
                     break;
 
                 case 3:
@@ -379,26 +403,29 @@ public class Client{
                     bookingId = sc.nextInt();
                     System.out.print("Please enter offset (+ delay - forward): ");
                     int offset = sc.nextInt();
+                    
+                    //First 2B
+                    communicationMethod = 1;
+                    requestType = (byte)((choice));
+                    //Message ID = current message sent number
+                    messageID = messageCounter;
+                    //Payload - Marshal step
+                    bookingID = Util.marshall(bookingId);
+                    offsetValue = Util.marshall(offset);
+                    //Form payload
+                    payloadSize = bookingID.length + offsetValue.length;
+                    payload = new byte[payloadSize];
+                    System.arraycopy(bookingID, 0, payload, 0, bookingID.length);
+                    System.arraycopy(offsetValue, 0, payload, bookingID.length, offsetValue.length);
 
-
-                    requestID = Integer.toString(choice).getBytes();
-                    bookingID = Integer.toString(bookingId).getBytes();
-                    offsetValue = Integer.toString(offset).getBytes();
-                    request = new byte[requestID.length + bookingID.length];
-                    System.arraycopy(requestID, 0, request, 0, requestID.length);
-                    System.arraycopy(bookingID, 0, request, requestID.length, bookingID.length);
-                    System.arraycopy(offsetValue, 0, request, requestID.length+bookingID.length, offsetValue.length);
-
+                    //Create Message
+                    request = Util.getMessageByte(communicationMethod, requestType, messageID, payloadSize, payload);
 
                     response = client.routineSendReceive(request);
 
                     //Demarshall
                     receivedString = new String(response, StandardCharsets.UTF_8);
                     System.out.println("Response: \n" + receivedString);
-
-
-                    // Next steps same as above
-                    // TODO Marshal int -> byte
 
                     break;
 
@@ -418,13 +445,18 @@ public class Client{
                     System.out.print("Please enter booking ID: ");
                     bookingId = sc.nextInt();
 
-                    
-                    requestID = Integer.toString(choice).getBytes();
-                    bookingID = Integer.toString(bookingId).getBytes();
-                    request = new byte[requestID.length + bookingID.length];
-                    System.arraycopy(requestID, 0, request, 0, requestID.length);
-                    System.arraycopy(bookingID, 0, request, requestID.length, bookingID.length);
-
+                    //First 2B
+                    communicationMethod = 1;
+                    requestType = (byte)((choice));
+                    //Message ID = current message sent number
+                    messageID = messageCounter;
+                    //Payload - Marshal step
+                    bookingID = Util.marshall(bookingId);
+                    //Form payload
+                    payloadSize = bookingID.length;
+                    payload = bookingID;
+                    //Create message
+                    request = Util.getMessageByte(communicationMethod, requestType, messageID, payloadSize, payload);
 
                     response = client.routineSendReceive(request);
 
@@ -441,24 +473,29 @@ public class Client{
                     System.out.print("Please enter offset (+ extend - shorten): ");
                     offset = sc.nextInt();
                     
+                    //First 2B
+                    communicationMethod = 1;
+                    requestType = (byte)((choice));
+                    //Message ID = current message sent number
+                    messageID = messageCounter;
+                    //Payload - Marshal step
+                    bookingID = Util.marshall(bookingId);
+                    offsetValue = Util.marshall(offset);
+                    //Form payload
+                    payloadSize = bookingID.length + offsetValue.length;
+                    payload = new byte[payloadSize];
+                    System.arraycopy(bookingID, 0, payload, 0, bookingID.length);
+                    System.arraycopy(offsetValue, 0, payload, bookingID.length, offsetValue.length);
 
-                    requestID = Integer.toString(choice).getBytes();
-                    bookingID = Integer.toString(bookingId).getBytes();
-                    offsetValue = Integer.toString(offset).getBytes();
-                    request = new byte[requestID.length + bookingID.length];
-                    System.arraycopy(requestID, 0, request, 0, requestID.length);
-                    System.arraycopy(bookingID, 0, request, requestID.length, bookingID.length);
-                    System.arraycopy(offsetValue, 0, request, requestID.length+bookingID.length, offsetValue.length);
-
-
+                    //Create Message
+                    request = Util.getMessageByte(communicationMethod, requestType, messageID, payloadSize, payload);
 
                     response = client.routineSendReceive(request);
 
-                    //Demarshall
+                    //TODO: Demarshall
                     receivedString = new String(response, StandardCharsets.UTF_8);
                     System.out.println("Response: \n" + receivedString);
 
-                    
                     break;
 
                 case 7:

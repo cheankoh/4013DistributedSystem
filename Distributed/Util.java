@@ -1,9 +1,10 @@
 package Distributed;
 
 public class Util {
+    public static final int MAX_SIZE = 1024;
+    public static final int MAX_PAYLOAD = 1014;
     // Implements marshalling and demarshalling logic
     // To run anywhere, should be of public static type
-
     //Marshalling Int
     public static byte[] marshall(int x){
         //Bit-shifting into an array
@@ -71,7 +72,19 @@ public class Util {
         else return false;
     }
 
-    //Marshall an object + Demarshall : TODO if needed.
+    //Create our message
+    public static byte[] getMessageByte(byte commMethod, byte msgType, int msgID, int payloadSize, byte[] payload){
+        byte[] toSendByte = new byte[MAX_SIZE];
+        //concatenation
+        toSendByte[0] = commMethod;
+        toSendByte[1] = msgType;
+        byte[] messageID = marshall(msgID);
+        byte[] size = marshall(payloadSize);
+        System.arraycopy(messageID,0,toSendByte,2,messageID.length);
+        System.arraycopy(size,0,toSendByte,6,size.length);
+        System.arraycopy(payload,0,toSendByte,10,payload.length);
+        return toSendByte;
+    }
 
     //Test
     public static void main(String[] args)
