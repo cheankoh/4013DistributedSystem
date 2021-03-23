@@ -211,6 +211,8 @@ public class DatabaseConnection {
                 intTiming.add(Integer.parseInt(start_end[1]));
                 booking.setTiming(intTiming);
                 System.out.println("intTiming:" + intTiming.toString());
+            } else {
+                return null;
             }
             PreparedStatement update = conn.prepareStatement("Delete from Booking where bookingID=?");
             update.setInt(1, bookingID);
