@@ -5,9 +5,12 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Random;
+
 
 import Controller.FileIO;
 import java.io.*;
@@ -17,40 +20,110 @@ import Model.Booking;
 import Controller.FacilityController;
 
 public class Server {
-  // Server UDP socket runs at this port
-  // Make sure this port is constant with final statics
+  /* Attributes for server */
+  private DatagramSocket serverSocket;
+  private static final int servicePort = 50001;
+  // Note: Port and IP will be from client message datagram
 
-  public final static int SERVICE_PORT = 50001;
+  /* invocation semantic, if True at most once, otherwise
+  assumed at least once used*/
+  private boolean atMostOnce;
+  /* Error simulation */
+  private double failRate;
+  private boolean simulateFail;
 
+  Random rand = new Random();
+
+  /*Constructors for Server*/
+  public Server(boolean isAtMostOnceSemantic, boolean simulateFail, double failRate) throws SocketException, UnknownHostException
+    {
+        this.serverSocket = new DatagramSocket(servicePort);
+        this.atMostOnce = isAtMostOnceSemantic;
+        this.simulateFail = simulateFail;
+        if (simulateFail){
+            this.failRate = failRate;
+        }
+        else{
+            this.failRate = 0.0;
+        }
+    }
+
+    // Simplified constructor //
+    public Server() throws SocketException, UnknownHostException
+    {
+        this.serverSocket = new DatagramSocket(servicePort);
+        // Default invocation semantics is at least once
+        this.atMostOnce = false;
+        //Default error simulation - error free
+        this.simulateFail = false;
+        this.failRate = 0.0;
+    }
+
+
+    //Sending a MARSHALLED byte array to client/server
+    public void send(byte[] message, InetAddress targetIP, int targetPort) throws IOException
+    {
+        //If error and then don't bother sending anything
+        double randomProb = rand.nextDouble();
+        if (this.simulateFail && randomProb <= this.failRate){
+            System.out.println("[INFO][SIMULATING DROPPING OF REPLY]");
+            return;
+        }
+        //Create a datagram packet before sending
+        DatagramPacket sendingPacket = new DatagramPacket(message, message.length, targetIP, targetPort);
+        this.serverSocket.send(sendingPacket);
+        System.out.println("[INFO][SENT A MESSAGE TO "+ targetIP + ":" + targetPort + " ]");
+    }
+
+    //TODO: Receiving a MARSHALLED byte array over the UDP network
+    //public byte[] receive() throws IOException
+
+    public DatagramPacket receive() throws IOException
+    {
+        // TODO: How to determine what is the length of the receiving packet        
+        // Hard code first - Best practice is to keep to one UDP and assume max possible size (waste still better)
+        byte[] messageBuffer = new byte[1024];
+        DatagramPacket receivingPacket = new DatagramPacket(messageBuffer, messageBuffer.length);
+        
+        //Receive
+        serverSocket.receive(receivingPacket);
+        System.out.println("[INFO][RECEIVED REQUEST" + receivingPacket.getAddress() + ":" + receivingPacket.getPort() + "]");
+        
+        //return messageBuffer; 
+
+        //TODO: Temporary
+        return receivingPacket;
+    }
+    
+    //TODO Higher receive - process - send reply routine
+    //Extracting information
+    // InetAddress sourceIP = receivingPacket.getAddress();
+    // int sourcePort = receivingPacket.getPort();
+  
   public static void main(String[] args) throws IOException {
-   
+    //TODO: Do this as command line if possible
+    boolean atMostOnce = false;
+    boolean simulateFail = true;
+    double probFailure = 0.2;
+    
+    //Set up constructor
+    Server server = new Server(atMostOnce,simulateFail,probFailure);
+    System.out.println("[INFO][SERVER INITIATED]");
+
     while (true) {
       try {
      
-        // Instantiate a new DatagramSocket to receive responses from the client
-        // Open a UDP socket at the above service port
-        DatagramSocket serverSocket = new DatagramSocket(SERVICE_PORT);
-  
-        /*
-         * Create buffers to hold sending and receiving data. It temporarily stores data
-         * in case of communication delays
-         */
-        byte[] receivingDataBuffer = new byte[1024];
-        byte[] sendingDataBuffer = new byte[1024];
-  
-        /*
-         * Instantiate a UDP packet to store the client data using the buffer for
-         * receiving data
-         */
-        DatagramPacket inputPacket = new DatagramPacket(receivingDataBuffer, receivingDataBuffer.length);
-        System.out.println("Waiting for a client to connect...");
-  
-        // Receive data from the client and store in inputPacket
-        serverSocket.receive(inputPacket);
+        System.out.println("[INFO][WAITING FOR REQUEST...]");
+        DatagramPacket inputPacket = server.receive();
+
+        //TODO Check the format of send - received
   
         // Printing out the client sent data
         String receivedData = new String(inputPacket.getData());
         System.out.println("Sent from the client: " + receivedData);
+
+
+        //TODO: Find a better way to embedd the application interface
   
         // Get the facility data from facilities.txt
         ArrayList<Facility> Facilitylist = new ArrayList<Facility>();
@@ -210,7 +283,7 @@ public class Server {
          * it in the corresponding buffer.
          */
         // sendingDataBuffer = receivedData.toUpperCase().getBytes();
-  
+        byte[] sendingDataBuffer = new byte[1024];
         sendingDataBuffer = sendString.getBytes();
   
         // Obtain client's IP address and the port
@@ -218,15 +291,12 @@ public class Server {
         int senderPort = inputPacket.getPort();
   
         // Create new UDP packet with data to send to the client
-        DatagramPacket outputPacket = new DatagramPacket(sendingDataBuffer, sendingDataBuffer.length, senderAddress,
-            senderPort);
   
         // Send the created packet to client
         // serverSocket.send(outputPacket);
-        serverSocket.send(outputPacket);
-        // Close the socket connection
-        serverSocket.close();
-      } catch (SocketException e) {
+        server.send(sendingDataBuffer,senderAddress,senderPort);
+      } 
+      catch (SocketException e) {
         e.printStackTrace();
       }
     }

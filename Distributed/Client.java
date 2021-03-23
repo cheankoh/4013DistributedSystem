@@ -151,8 +151,7 @@ public class Client{
         System.out.println("====================================");
         System.out.println("Welcome to Facility Booking System !");
         // Construct client and test sending dummies through to server
-        String host = "172.20.132.25";
-        // String host = "10.27.39.247";
+        String host = "localhost";
         int port = 50001;
         int timeout = 1;
         boolean atMostOnce = false;
