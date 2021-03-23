@@ -198,18 +198,17 @@ public class Server {
           if (res[0] == 1) {
             int id = res[1];
             sendString = "Booking Succesful.\n Booking ID: " + id + ". Please remember your BookingID to update/delete";
-          } else if (res[0] == 2) {
-            sendString = "Booking Failed: Wrong ID";
-          } else {
-            sendString = "Booking Failed: Slot not available";
+          } else if (res[0] == -1) {
+            // sendString = "Booking Failed: Wrong ID";
+            sendString = "Booking Failed: Invalid selection for facility.";
+          } else if (res[0] == -2) {
+            sendString = "Booking Failed: Timeslot already booked";
           }
 
           break;
-        // res = 1 (Booking Succesful)
-        // res = 2 (Booking Failed: Wrong ID)
-        // res = 3 (Booking Failed: Slot not available)
 
         case 3:
+          // Shift Booking Slot
           bookingId = Character.getNumericValue(receivedData.charAt(1));
           offset = Character.getNumericValue(receivedData.charAt(2));
           int[] shiftRes = FacilityController.shiftBookingSlot(bookingId, offset, Facilitylist, db);
@@ -217,13 +216,15 @@ public class Server {
           if (shiftRes[0] == 1) {
             sendString = "Booking Change Succesful. \n New Booking ID: " + shiftRes[1]
                 + ". Please remember your New BookingID to update/delete";
+          } else if (shiftRes[0] == 0) {
+            sendString = "Booking Shift failed: Unable to create new booking";
           } else if (shiftRes[0] == -1) {
             sendString = "Invalid bookingID";
 
           } else if (shiftRes[0] == -2) {
             sendString = "Booking Shift failed: Timeslot already booked";
 
-          } else {
+          } else if (shiftRes[0] == -3) {
             sendString = "Booking Shift failed: Invalid offset";
           }
           break;
@@ -254,6 +255,8 @@ public class Server {
           if (extendRes[0] == 1) {
             sendString = "Booking extended/shortened Succesful. \n New Booking ID: " + extendRes[1]
                 + ". Please remember your New BookingID to update/delete";
+          } else if (extendRes[0] == 0) {
+            sendString = "Booking extend/shorten failed: Unable to create booking";
           } else if (extendRes[0] == -1) {
             sendString = "Invalid bookingID";
 

@@ -57,7 +57,7 @@ public class FacilityController {
         if (facilitySelection > filteredFacilityList.size()) {
 
             int[] result = new int[2];
-            result[0] = 3;
+            result[0] = -1;
             result[1] = 0;
             return result; // Invalid selection for facility.
         }
@@ -73,7 +73,7 @@ public class FacilityController {
                 System.out.println("Booking failed: Timeslot already booked");
 
                 int[] result = new int[2];
-                result[0] = 2;
+                result[0] = -2;
                 result[1] = 0;
                 return result;
             }
@@ -161,11 +161,13 @@ public class FacilityController {
         // Do a checking if shifting is available//
         // If offset is positive, check availability of shifted slots
         if (offset > 0) {
-            if (endTime + offset > 17) {
+            if (endTime + offset > 18) {
                 shiftResult[0] = -3; // Invalid shift
                 shiftResult[1] = 0;
                 return shiftResult;
             }
+
+            // {1,800},{0,830},{0,900},{0,930} start=1 end=1
             for (int j = endTime; j < endTime + offset; j++) {
                 if (timeslot[j][0] != 0) {
                     System.out.println("Shift failed: Timeslot already booked");
@@ -182,7 +184,8 @@ public class FacilityController {
                 shiftResult[1] = 0;
                 return shiftResult;
             }
-            for (int j = startTime - 1 + offset; j < startTime - 1; j++) {
+            for (int j = startTime - 1 + offset; j < startTime - 1; j++) { 
+                // {0,800},{0,830},{1,900},{0,930} start=3 end=3
                 if (timeslot[j][0] != 0) {
                     System.out.println("Shift failed: Timeslot already booked");
 
@@ -217,13 +220,13 @@ public class FacilityController {
         // Create a Booking object and save to database
         Booking newBooking = new Booking();
         newBooking.setUserID(userID);
-        newBooking.setFacilityID(targetFacility.getFacilityID());
+        newBooking.setFacilityID(facilityID);
         newBooking.setBookingID(BookingID);
         BookingID++;
         newBooking.setDate(date);
         ArrayList<Integer> shifted_timing = new ArrayList<Integer>();
-        shifted_timing.add(startTime);
-        shifted_timing.add(endTime);
+        shifted_timing.add(startTime+offset);
+        shifted_timing.add(endTime+offset);
         newBooking.setTiming(shifted_timing);
         int newBookingID = conn.createBooking(newBooking);
         // ArrayList<Booking> booking = new ArrayList<Booking>();
@@ -302,7 +305,7 @@ public class FacilityController {
             DatabaseConnection conn) {
 
         Booking result = conn.deleteBooking(bookingID); // result == deleted booking
-
+        system.out.println("Booking id:" + bookingID+ "deleted");
         // If success, cont.
         // Else return -1
 
@@ -340,12 +343,12 @@ public class FacilityController {
         // Do a checking if shifting is available//
         // If noOfSlots is positive, check availability of shifted slots
         if (noOfSlots > 0) {
-            if (endTime + noOfSlots > 17) {
+            if (endTime + noOfSlots > 18) {
                 shiftResult[0] = -3; // Invalid shift latest slot reached
                 shiftResult[1] = 0;
                 return shiftResult;
             }
-            for (int j = startTime - 1; j < endTime + noOfSlots; j++) {
+            for (int j = endTime; j < endTime + offset; j++) {
                 if (timeslot[j][0] != 0) {
                     System.out.println("Shift failed: Timeslot already booked");
 
@@ -399,7 +402,7 @@ public class FacilityController {
         // Create a new Booking object and save to database
         Booking newBooking = new Booking();
         newBooking.setUserID(userID);
-        newBooking.setFacilityID(targetFacility.getFacilityID());
+        newBooking.setFacilityID(facilityID);
         newBooking.setBookingID(BookingID);
         BookingID++;
         newBooking.setDate(date);
