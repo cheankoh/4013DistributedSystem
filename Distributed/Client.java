@@ -54,7 +54,7 @@ public class Client{
         this.hostIP = InetAddress.getByName(hostIP);
         this.hostPort = hostPort;
         // Default timeout is 1 sec
-        this.requestTimeout = 1;
+        this.requestTimeout = 5;
         // Default invocation semantics is at least once
         this.atMostOnce = false;
         //Default error simulation - error free
@@ -302,6 +302,29 @@ public class Client{
                     System.out.println("1. 8:00 am");
                     System.out.println("2. 8:30 am");
                     System.out.println("3. 9:00 am");
+                    System.out.println("4. 9:30 am");
+                    System.out.println("5. 10:00 am");
+                    System.out.println("6. 10:30 am");
+                    System.out.println("7. 11:00 am");
+                    System.out.println("8. 11:30 am");
+                    System.out.println("9. 12:00 pm");
+                    System.out.println("10. 12:30 pm");
+                    System.out.println("11. 1:00 pm");
+                    System.out.println("12. 1:30 pm");
+                    System.out.println("13. 2:00 pm");
+                    System.out.println("14. 2:30 pm");
+                    System.out.println("15. 3:00 pm");
+                    System.out.println("16. 3:30 pm");
+                    System.out.println("17. 4:00 pm");
+                    System.out.println("18. 4:30 pm");
+                    System.out.println("====================================");
+                    start = sc.nextInt();
+                    System.out.print("Please enter end time: ");
+                    System.out.println("====================================");
+     
+                    System.out.println("1. 8:30 am");
+                    System.out.println("2. 9:00 am");
+                    System.out.println("3. 9:30 am");
                     System.out.println("4. 10:00 am");
                     System.out.println("5. 10:30 am");
                     System.out.println("6. 11:00 am");
@@ -316,28 +339,7 @@ public class Client{
                     System.out.println("15. 3:30 pm");
                     System.out.println("16. 4:00 pm");
                     System.out.println("17. 4:30 pm");
-                    System.out.println("====================================");
-                    start = sc.nextInt();
-                    System.out.print("Please enter end time: ");
-                    System.out.println("====================================");
-     
-                    System.out.println("1. 8:30 am");
-                    System.out.println("2. 9:00 am");
-                    System.out.println("3. 10:00 am");
-                    System.out.println("4. 10:30 am");
-                    System.out.println("5. 11:00 am");
-                    System.out.println("6. 11:30 am");
-                    System.out.println("7. 12:00 pm");
-                    System.out.println("8. 12:30 pm");
-                    System.out.println("9. 1:00 pm");
-                    System.out.println("10. 1:30 pm");
-                    System.out.println("11. 2:00 pm");
-                    System.out.println("12. 2:30 pm");
-                    System.out.println("13. 3:00 pm");
-                    System.out.println("14. 3:30 pm");
-                    System.out.println("15. 4:00 pm");
-                    System.out.println("16. 4:30 pm");
-                    System.out.println("17. 5:00 pm");
+                    System.out.println("18. 5:00 pm");
                     System.out.println("====================================");
                     stop = sc.nextInt();
 
