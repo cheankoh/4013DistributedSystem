@@ -50,7 +50,6 @@ public class DatabaseConnection {
                         String[] isBooked_time = slot.split(":");
                         Integer[] timeSlot = { Integer.parseInt(isBooked_time[0]), Integer.parseInt(isBooked_time[1]) };
                         addElement(timeslot, timeSlot);
-                        System.out.println(timeslot.toString() + "\n");
                     }
                     avail.put(day, timeslot);
                 }
@@ -81,7 +80,7 @@ public class DatabaseConnection {
                 booking.setUserID(result.getInt("userID"));
                 booking.setFacilityID(result.getInt("facilityID"));
                 booking.setBookingID(result.getInt("bookingID"));
-                booking.setDate(result.getString("date"));
+                booking.setDate(result.getInt("date"));
                 String timing = result.getString("timing");
                 String[] start_end = timing.split(",");
                 ArrayList<Integer> intTiming = new ArrayList<Integer>();
@@ -146,10 +145,9 @@ public class DatabaseConnection {
                 String timingString = String.valueOf(timing.get(0)) + "," + String.valueOf(timing.get(1));
 
                 update.setString(1, timingString);
-                update.setString(2, booking.getDate());
+                update.setInt(2, booking.getDate());
                 update.setInt(3, booking.getBookingID());
                 update.executeUpdate();
-                update.executeUpdate()
             }
             return true;
         } catch (SQLException s) {
@@ -164,20 +162,24 @@ public class DatabaseConnection {
 
     public Integer createBooking(Booking booking) {
         try {
-            PreparedStatement update = conn
-                    .prepareStatement("Insert into Booking (userID, facilityID, date, timing) values (?, ?, ?, ?)");
-            update.setInt(1, booking.getUserID());
-            update.setInt(2, booking.getFacilityID());
-            update.setString(3, booking.getDate());
+            Statement insert = conn.createStatement();
+            String sql = "Insert into Booking (userID, facilityID, date, timing) values (";
+            sql += booking.getUserID() + ", ";
+            sql += booking.getFacilityID() + ", ";
+            sql += booking.getDate() + ", ";
             // Manually concatenate ArrayList<Integer> as timing string
             // for simplicity
             ArrayList<Integer> timing = booking.getTiming();
             String timingString = String.valueOf(timing.get(0)) + "," + String.valueOf(timing.get(1));
-            update.setString(4, timingString);
-            update.executeUpdate();
-            ResultSet rs = update.getGeneratedKeys();
-            Long longID = rs.getLong(1);
-            Integer generatedBookingID = longID.intValue();
+            sql += "'" + timingString + "')";
+            System.out.println(sql);
+            insert.executeUpdate(sql, Statement.RETURN_GENERATED_KEYS);
+            ResultSet rs = insert.getGeneratedKeys();
+            Integer generatedBookingID = 0;
+            if (rs.next()) {
+                Long longID = rs.getLong(1);
+                generatedBookingID = longID.intValue();
+            }
             booking.setBookingID(generatedBookingID);
             return generatedBookingID;
         } catch (SQLException s) {
