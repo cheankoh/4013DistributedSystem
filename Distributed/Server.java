@@ -7,6 +7,7 @@ import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
@@ -108,19 +109,10 @@ public class Server {
     // Set up constructor
     Server server = new Server(atMostOnce, simulateFail, probFailure);
     System.out.println("[INFO][SERVER INITIATED]");
-    DatabaseConnection conn = new DatabaseConnection();
-    Booking book = new Booking();
-    book.setDate(4);
-    book.setFacilityID(5);
-    book.setUserID(3);
-    ArrayList<Integer> newTiming = new ArrayList<Integer>();
-    newTiming.add(2);
-    newTiming.add(9);
-    book.setTiming(newTiming);
-    conn.createBooking(book);
     while (true) {
       try {
-
+        DatabaseConnection db = new DatabaseConnection();
+        System.out.println("[INFO][MYSQL CONNECTION SUCCESSFULLY ESTABLISHED...]");
         System.out.println("[INFO][WAITING FOR REQUEST...]");
         DatagramPacket inputPacket = server.receive();
 
@@ -148,9 +140,8 @@ public class Server {
         int bookingId;
         int offset;
         int noOfSlots;
-        Facilitylist = FileIO.getFacilityData();
-        Bookinglist = FileIO.getBookingData();
-
+        Facilitylist = db.getFacilityList();
+        Bookinglist = db.getBookingList();
         String sendString = "";
         // requestID = number that user chose for operation.
         int requestId = Character.getNumericValue(receivedData.charAt(0));
@@ -178,7 +169,7 @@ public class Server {
                 sendString = sendString.concat(slot[1] + "\n");
             }
           }
-
+          System.out.println("sendString: " + sendString);
           // Create String to send back to user.
           // for (Facility i: filteredFacilityList){
           // sendString = sendString.concat(i.getFacilityName()+ "\n");
@@ -201,7 +192,7 @@ public class Server {
           System.out.println("userID: " + userID);
 
           int[] res = FacilityController.bookFacility(Facilitylist, facilityTypeId, facilitySelection, dayofWeek,
-              startTime, endTime, userID);
+              startTime, endTime, userID, db);
           System.out.println("res: " + res);
 
           if (res[0] == 1) {
@@ -221,7 +212,7 @@ public class Server {
         case 3:
           bookingId = Character.getNumericValue(receivedData.charAt(1));
           offset = Character.getNumericValue(receivedData.charAt(2));
-          int[] shiftRes = FacilityController.shiftBookingSlot(bookingId, offset, Facilitylist);
+          int[] shiftRes = FacilityController.shiftBookingSlot(bookingId, offset, Facilitylist, db);
 
           if (shiftRes[0] == 1) {
             sendString = "Booking Change Succesful. \n New Booking ID: " + shiftRes[1]
@@ -245,7 +236,7 @@ public class Server {
         case 5:
           // 5. Cancel Booking
           bookingId = Character.getNumericValue(receivedData.charAt(1));
-          int deleteRes = FacilityController.cancelBooking(bookingId, Facilitylist);
+          int deleteRes = FacilityController.cancelBooking(bookingId, Facilitylist, db);
 
           if (deleteRes == 1) {
             sendString = "Booking Delete Success";
@@ -258,7 +249,7 @@ public class Server {
           // 6. Extend Booking Slot
           bookingId = Character.getNumericValue(receivedData.charAt(1));
           noOfSlots = Character.getNumericValue(receivedData.charAt(2));
-          int[] extendRes = FacilityController.extendBookingSlot(bookingId, noOfSlots, Facilitylist);
+          int[] extendRes = FacilityController.extendBookingSlot(bookingId, noOfSlots, Facilitylist, db);
 
           if (extendRes[0] == 1) {
             sendString = "Booking extended/shortened Succesful. \n New Booking ID: " + extendRes[1]

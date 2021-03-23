@@ -45,7 +45,7 @@ public class FacilityController {
     }
 
     public static int[] bookFacility(ArrayList<Facility> facilityData, int facilityTypeID, int facilitySelection,
-            int dayOfWeek, int startTime, int endTime, int userID) {
+            int dayOfWeek, int startTime, int endTime, int userID, DatabaseConnection conn) {
 
         // Get list of facility in the selected facility type.
         ArrayList<Facility> filteredFacilityList = new ArrayList<Facility>();
@@ -92,7 +92,8 @@ public class FacilityController {
                 i = targetFacility;
             }
         }
-        FileIO.storeFacilityData(facilityData); // update facility.txt
+        // FileIO.storeFacilityData(facilityData); // update facility.txt
+        conn.updateFacility(facilityData);
 
         // Create a Booking object and save to database
         Booking newBooking = new Booking();
@@ -105,23 +106,24 @@ public class FacilityController {
         timing.add(startTime);
         timing.add(endTime);
         newBooking.setTiming(timing);
-        ArrayList<Booking> booking = new ArrayList<Booking>();
-        booking = FileIO.getBookingData();
-        booking.add(newBooking);
-        FileIO.storeBookingData(booking);//////// Delete this and call connection.create(booking)////////
-
+        int bookingID = conn.createBooking(newBooking);
+        // ArrayList<Booking> booking = new ArrayList<Booking>();
+        // booking = FileIO.getBookingData();
+        // booking.add(newBooking);
+        // FileIO.storeBookingData(booking);//////// Delete this and call
+        // connection.create(booking)////////
         int[] result = new int[2];
-        result[0] = 1;
-        result[1] = BookingID;
+        result[0] = (bookingID > 0) ? 1 : 0; // 0 if failure (not likely to happen)
+        result[1] = bookingID;
         return result; // Successfully booked and updated in database
 
     }
 
-    public static int[] shiftBookingSlot(int bookingID, int offset, ArrayList<Facility> facilityData) {
+    public static int[] shiftBookingSlot(int bookingID, int offset, ArrayList<Facility> facilityData,
+            DatabaseConnection conn) {
 
-        // Booking result = connection.delete(bookingID); //result == deleted booking
-        Booking result = new Booking(); // temporarily
-
+        Booking result = conn.deleteBooking(bookingID); // result == deleted booking
+        System.out.println("bookingID passed : " + bookingID);
         // If success, cont.
         // Else return -1
 
@@ -164,7 +166,7 @@ public class FacilityController {
                 shiftResult[1] = 0;
                 return shiftResult;
             }
-            for (int j = startTime - 1; j < endTime + offset; j++) {
+            for (int j = endTime; j < endTime + offset; j++) {
                 if (timeslot[j][0] != 0) {
                     System.out.println("Shift failed: Timeslot already booked");
 
@@ -180,7 +182,7 @@ public class FacilityController {
                 shiftResult[1] = 0;
                 return shiftResult;
             }
-            for (int j = startTime - 1 + offset; j < endTime; j++) {
+            for (int j = startTime - 1 + offset; j < startTime - 1; j++) {
                 if (timeslot[j][0] != 0) {
                     System.out.println("Shift failed: Timeslot already booked");
 
@@ -194,7 +196,7 @@ public class FacilityController {
 
         // Set original availability to 0 (not Booked)
         for (int j = startTime - 1; j < endTime; j++) {
-            timeslot[j][0] = 1;
+            timeslot[j][0] = 0;
         }
         // Set SHIFTED availability to 1 (Booked)
         for (int j = startTime - 1 + offset; j < endTime + offset; j++) {
@@ -209,7 +211,8 @@ public class FacilityController {
                 i = targetFacility;
             }
         }
-        FileIO.storeFacilityData(facilityData); // update facility.txt
+        // FileIO.storeFacilityData(facilityData); // update facility.txt
+        conn.updateFacility(facilityData);
 
         // Create a Booking object and save to database
         Booking newBooking = new Booking();
@@ -222,22 +225,23 @@ public class FacilityController {
         shifted_timing.add(startTime);
         shifted_timing.add(endTime);
         newBooking.setTiming(shifted_timing);
-        ArrayList<Booking> booking = new ArrayList<Booking>();
-        booking = FileIO.getBookingData();
-        booking.add(newBooking);
-        FileIO.storeBookingData(booking);//////// Delete this and call connection.create(booking)////////
+        int newBookingID = conn.createBooking(newBooking);
+        // ArrayList<Booking> booking = new ArrayList<Booking>();
+        // booking = FileIO.getBookingData();
+        // booking.add(newBooking);
+        // FileIO.storeBookingData(booking);//////// Delete this and call
+        // connection.create(booking)////////
 
-        shiftResult[0] = 1;
-        shiftResult[1] = BookingID;
+        shiftResult[0] = (newBookingID > 0) ? 1 : 0; // 0 is failure to add
+        shiftResult[1] = newBookingID;
         return shiftResult; // Successfully booked and updated in database
     }
 
     // public int cancelBooking(int bookingID,ArrayList<Facility>
     // facilityData,ArrayList<Booking> bookingData, Connection connection) {
-    public static int cancelBooking(int bookingID, ArrayList<Facility> facilityData) {
+    public static int cancelBooking(int bookingID, ArrayList<Facility> facilityData, DatabaseConnection conn) {
 
-        // Booking result = connection.delete(bookingID); //result ==deleted booking
-        Booking result = new Booking(); // temporarily
+        Booking result = conn.deleteBooking(bookingID); // result ==deleted booking
 
         // If success, cont.
         // Else return -1
@@ -280,7 +284,8 @@ public class FacilityController {
                 i = targetFacility;
             }
         }
-        FileIO.storeFacilityData(facilityData); // update facility.txt
+        // FileIO.storeFacilityData(facilityData); // update facility.txt
+        conn.updateFacility(facilityData);
 
         // Return success
         return 1;
@@ -293,10 +298,10 @@ public class FacilityController {
         // }
     }
 
-    public static int[] extendBookingSlot(int bookingID, int noOfSlots, ArrayList<Facility> facilityData) {
+    public static int[] extendBookingSlot(int bookingID, int noOfSlots, ArrayList<Facility> facilityData,
+            DatabaseConnection conn) {
 
-        // Booking result = connection.delete(bookingID); //result == deleted booking
-        Booking result = new Booking(); // temporarily
+        Booking result = conn.deleteBooking(bookingID); // result == deleted booking
 
         // If success, cont.
         // Else return -1
@@ -380,8 +385,6 @@ public class FacilityController {
             }
         }
 
-
-
         // Update data in facilities.txt
         availability.put(date, timeslot);
         targetFacility.setAvailability(availability);
@@ -390,10 +393,9 @@ public class FacilityController {
                 i = targetFacility;
             }
         }
-        FileIO.storeFacilityData(facilityData); // update facility.txt
+        // FileIO.storeFacilityData(facilityData); // update facility.txt
+        conn.updateFacility(facilityData);
 
-        
-        
         // Create a new Booking object and save to database
         Booking newBooking = new Booking();
         newBooking.setUserID(userID);
@@ -403,15 +405,17 @@ public class FacilityController {
         newBooking.setDate(date);
         ArrayList<Integer> shifted_timing = new ArrayList<Integer>();
         shifted_timing.add(startTime);
-        shifted_timing.add(endTime+noOfSlots); //take note
+        shifted_timing.add(endTime + noOfSlots); // take note
         newBooking.setTiming(shifted_timing);
-        ArrayList<Booking> booking = new ArrayList<Booking>();
-        booking = FileIO.getBookingData();
-        booking.add(newBooking);
-        FileIO.storeBookingData(booking);//////// Delete this and call connection.create(booking)////////
+        int newBookingID = conn.createBooking(newBooking);
+        // ArrayList<Booking> booking = new ArrayList<Booking>();
+        // booking = FileIO.getBookingData();
+        // booking.add(newBooking);
+        // FileIO.storeBookingData(booking);//////// Delete this and call
+        // connection.create(booking)////////
 
-        shiftResult[0] = 1;
-        shiftResult[1] = BookingID;
+        shiftResult[0] = (newBookingID > 0) ? 1 : 0; // 0 is failure to add
+        shiftResult[1] = newBookingID;
         return shiftResult; // Successfully booked and updated in database
     }
 }

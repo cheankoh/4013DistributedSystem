@@ -1,0 +1,42 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Launch Current File",
+            "request": "launch",
+            "mainClass": "${file}"
+        },
+        {
+            "type": "java",
+            "name": "Launch DataFactory",
+            "request": "launch",
+            "mainClass": "Controller.DataFactory",
+            "projectName": "4013DistributedSystem_14f53a1f"
+        },
+        {
+            "type": "java",
+            "name": "Launch Client",
+            "request": "launch",
+            "mainClass": "Distributed.Client",
+            "projectName": "4013DistributedSystem_14f53a1f"
+        },
+        {
+            "type": "java",
+            "name": "Launch Server",
+            "request": "launch",
+            "mainClass": "Distributed.Server",
+            "projectName": "4013DistributedSystem_14f53a1f"
+        },
+        {
+            "type": "java",
+            "name": "Launch Util",
+            "request": "launch",
+            "mainClass": "Distributed.Util",
+            "projectName": "4013DistributedSystem_14f53a1f"
+        }
+    ]
+}

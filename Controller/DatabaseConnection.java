@@ -45,11 +45,13 @@ public class DatabaseConnection {
                     // System.out.println("before split : " + day_avail[1]);
                     // System.out.println("all time slots : " + eachTimeSlot.toString());
 
-                    Integer timeslot[][] = {};
+                    Integer timeslot[][] = new Integer[19][2];
+                    int count = 0;
                     for (String slot : eachTimeSlot) {
                         String[] isBooked_time = slot.split(":");
                         Integer[] timeSlot = { Integer.parseInt(isBooked_time[0]), Integer.parseInt(isBooked_time[1]) };
-                        addElement(timeslot, timeSlot);
+                        timeslot[count] = timeSlot;
+                        count++;
                     }
                     avail.put(day, timeslot);
                 }
@@ -193,20 +195,36 @@ public class DatabaseConnection {
         }
     }
 
-    public Boolean deleteBooking(int bookingID) {
-        Boolean isValidID = true;
+    public Booking deleteBooking(int bookingID) {
         try {
+            Statement getFacility = conn.createStatement();
+            ResultSet result = getFacility.executeQuery("Select * from Booking where bookingID=" + bookingID);
+            Booking booking = new Booking();
+            if (result.next()) {
+                booking.setBookingID(result.getInt("bookingID"));
+                booking.setFacilityID(result.getInt("facilityID"));
+                booking.setUserID(result.getInt("userID"));
+                booking.setDate(result.getInt("date"));
+                String[] start_end = result.getString("timing").split(",");
+                ArrayList<Integer> intTiming = new ArrayList<Integer>();
+                intTiming.add(Integer.parseInt(start_end[0]));
+                intTiming.add(Integer.parseInt(start_end[1]));
+                booking.setTiming(intTiming);
+                System.out.println("intTiming:" + intTiming.toString());
+            }
             PreparedStatement update = conn.prepareStatement("Delete from Booking where bookingID=?");
             update.setInt(1, bookingID);
-            isValidID = (update.executeUpdate() > 0) ? true : false;
+            update.executeUpdate();
+            return booking;
         } catch (SQLException s) {
             // TODO: handle exception
             s.printStackTrace();
+            return null;
         } catch (Exception e) {
             // TODO: handle exception
             e.printStackTrace();
+            return null;
         }
-        return isValidID;
     }
 
     public static Integer[][] addElement(Integer[][] a, Integer[] e) {
