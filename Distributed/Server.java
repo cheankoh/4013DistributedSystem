@@ -20,6 +20,7 @@ import Model.Booking;
 import Controller.FacilityController;
 
 import Distributed.Util;
+import Distributed.HistoryKey;
 
 public class Server {
   /* Attributes for server */
@@ -97,20 +98,31 @@ public class Server {
   
   public static void main(String[] args) throws IOException {
     //TODO: Do this as command line if possible
-    boolean atMostOnce = false;
+    boolean atMostOnce = true;
     boolean simulateFail = true;
-    double probFailure = 0.2;
+    double probFailure = 0.8;
 
-     //About payload to create a reply message
-     byte communicationMethod;
-     byte replyType;
-     int messageID;
-     byte[] payload;
-     int payloadSize;
+    //About payload to create a reply message
+    byte communicationMethod;
+    byte replyType;
+    int messageID;
+    byte[] payload;
+    int payloadSize;
     
     //Set up constructor
     Server server = new Server(atMostOnce,simulateFail,probFailure);
     System.out.println("[INFO][SERVER INITIATED]");
+
+    //History if atMostOnce semantic is true
+    //This store IP/ Port in string as key and Array
+    HashMap<HistoryKey,HashMap<Integer,byte[]>> historyMap = null;
+    if (atMostOnce){
+      System.out.println("[INFO][AT MOST ONCE SEMANTICS USED]");
+      historyMap = new HashMap<HistoryKey,HashMap<Integer,byte[]>>();
+    }
+    else{
+      System.out.println("[INFO][AT LEAST ONCE SEMANTICS USED]");
+    }
 
     while (true) {
       try {
@@ -132,10 +144,25 @@ public class Server {
 
         //Display for debug purpose
         System.out.println("[DEBUG][SENT FROM CLIENT - METHOD: " + clientCommMethod + ", MESS_TYPE: "
-        + clientMsgType + ", MESS_ID: " + clientMsgID + ", SIZE: " + clientPayloadSize + ", DATA: " + clientPayload);
+        + clientMsgType + ", MESS_ID: " + clientMsgID + ", SIZE: " + clientPayloadSize + ", DATA: " + clientPayload.toString());
 
         //TODO: Find a better way to embedd the application interface
         //TODO: Check and ignore non request
+
+        //Check history if AT MOST ONCE
+        if(atMostOnce){
+          System.out.println("[DEBUG][CHECKING REQUEST HISTORY FOR DUPLICATES]");
+          HistoryKey key = new HistoryKey(clientAddress.toString(),clientPort);
+          if (historyMap.containsKey(key)){
+            System.out.println("[DEBUG][CLIENT IP & PORT FOUND. CHECKING REQUEST ID]");
+            if (historyMap.get(key).containsKey(clientMsgID)){
+              System.out.println("[DEBUG][DUPLICATE REQUEST ID FOUND. RETRANSMITTING...]");
+              // Just retransmit the message directly from history
+              server.send(historyMap.get(key).get(clientMsgID),clientAddress,clientPort);
+              continue;
+            }
+          }
+        }
   
         // Get the facility data from facilities.txt
         ArrayList<Facility> Facilitylist = new ArrayList<Facility>();
@@ -304,7 +331,22 @@ public class Server {
 
         // Create new UDP packet with data to send to the client
         byte[] sendBuffer = Util.getMessageByte(communicationMethod, replyType, messageID, payloadSize, payload);
-  
+        
+        // If AT MOST ONCE, save to history before sending
+        if(atMostOnce){
+          System.out.println("[DEBUG][INSERTING INTO HISTORY]");
+          HistoryKey savedKey = new HistoryKey(clientAddress.toString(), clientPort);
+          if (historyMap.containsKey(savedKey)){
+            historyMap.get(savedKey).put(messageID, sendBuffer);
+            System.out.println("[DEBUG][INSERTED NEW REQUEST ID]");
+          }
+          else{
+            historyMap.put(savedKey,(new HashMap<Integer,byte[]>()));
+            historyMap.get(savedKey).put(messageID, sendBuffer);
+            System.out.println("[DEBUG][INSERTED NEW IP, PORT AND REQUEST ID]");
+          }
+        }
+
         // Send the created packet to client
         // serverSocket.send(outputPacket);
         server.send(sendBuffer,clientAddress,clientPort);
