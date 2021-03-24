@@ -28,6 +28,8 @@ public class Client{
     /* Error simulation */
     private double failRate;
     private boolean simulateFail;
+    /*Keep track of message ID*/
+    private int messageCounter;
 
     Random rand = new Random();
 
@@ -47,6 +49,7 @@ public class Client{
         else{
             this.failRate = 0.0;
         }
+        this.messageCounter = 0;
     }
 
     // Simplified constructor //
@@ -62,9 +65,13 @@ public class Client{
         //Default error simulation - error free
         this.simulateFail = false;
         this.failRate = 0.0;
+        this.messageCounter = 0;
     }
 
     //TODO: Add setters for other attributes when added.
+    public int getCurMsgCount(){
+        return this.messageCounter;
+    }
 
     //Sending a MARSHALLED byte array over the server
     public void send(byte[] message) throws IOException
@@ -101,7 +108,7 @@ public class Client{
     public byte[] routineSendReceive(byte[] message) throws IOException, SocketTimeoutException
     {   
         int numTimeouts = 0;
-        int maxTimeouts = 5; // @TODO: Move to constants
+        int maxTimeouts = 10; // @TODO: Move to constants
 
         //dummy byte array of length 0
         byte[] response = new byte[0];
@@ -121,6 +128,10 @@ public class Client{
 
         if (response.length == 0)
             System.out.println("[ERROR][SERVER UNCONTACTABLE]");
+
+        //Bump up message ID
+        this.messageCounter+=1;
+        System.out.println("[DEBUG][BUMPED UP MESSAGE COUNTER TO "+ this.messageCounter + "]");
 
         return response;
 
@@ -157,7 +168,6 @@ public class Client{
         boolean atMostOnce = false;
         boolean simulateFail = true;
         double probFailure = 0.2;
-        int messageCounter = 0;
 
         //About payload to create a message
         byte communicationMethod;
@@ -240,7 +250,7 @@ public class Client{
                     communicationMethod = 1;
                     requestType = (byte)((choice));
                     //Message ID = current message sent number
-                    messageID = messageCounter;
+                    messageID = client.getCurMsgCount();
                     //Payload - Marshal step
                     facilityType = Util.marshall(facility);
                     facilitySelection = Util.marshall(facilityNumber);
@@ -362,7 +372,7 @@ public class Client{
                     communicationMethod = 1;
                     requestType = (byte)((choice));
                     //Message ID = current message sent number
-                    messageID = messageCounter;
+                    messageID = client.getCurMsgCount();
                     //Payload - Marshal step
                     facilityType = Util.marshall(facility);
                     facilitySelection = Util.marshall(facilityNumber);
@@ -406,7 +416,7 @@ public class Client{
                     communicationMethod = 1;
                     requestType = (byte)((choice));
                     //Message ID = current message sent number
-                    messageID = messageCounter;
+                    messageID = client.getCurMsgCount();
                     //Payload - Marshal step
                     bookingID = Util.marshall(bookingId);
                     offsetValue = Util.marshall(offset);
@@ -447,7 +457,7 @@ public class Client{
                     communicationMethod = 1;
                     requestType = (byte)((choice));
                     //Message ID = current message sent number
-                    messageID = messageCounter;
+                    messageID = client.getCurMsgCount();
                     //Payload - Marshal step
                     bookingID = Util.marshall(bookingId);
                     //Form payload
@@ -475,7 +485,7 @@ public class Client{
                     communicationMethod = 1;
                     requestType = (byte)((choice));
                     //Message ID = current message sent number
-                    messageID = messageCounter;
+                    messageID = client.getCurMsgCount();
                     //Payload - Marshal step
                     bookingID = Util.marshall(bookingId);
                     offsetValue = Util.marshall(offset);
