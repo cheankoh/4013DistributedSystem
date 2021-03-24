@@ -84,9 +84,7 @@ public class Client{
     //Receiving a MARSHALLED byte array over the UDP network
     public byte[] receive() throws IOException, SocketTimeoutException
     {
-        // TODO: How to determine what is the length of the receiving packet        
-        // Hard code first - Best practice is to keep to one UDP and assume max possible size (waste still better)
-        byte[] messageBuffer = new byte[1024];
+        byte[] messageBuffer = new byte[Util.MAX_SIZE];
         DatagramPacket receivingPacket = new DatagramPacket(messageBuffer, messageBuffer.length);
 
         //Timeout in milliseconds
@@ -96,7 +94,7 @@ public class Client{
         clientSocket.receive(receivingPacket);
         System.out.println("[INFO][RECEIVED REPLY BY SERVER]");
         
-        return messageBuffer; 
+        return receivingPacket.getData(); 
     }
 
     //Wrap send and receive together for reusibility
