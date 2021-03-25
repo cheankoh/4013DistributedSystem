@@ -74,6 +74,7 @@ public class Client{
     }
 
     //Sending a MARSHALLED byte array over the server
+    //Return True = need to allocate max; False = no need to allocate so big
     public void send(byte[] message) throws IOException
     {
         //If error and then don't bother sending anything
@@ -89,9 +90,13 @@ public class Client{
     }
 
     //Receiving a MARSHALLED byte array over the UDP network
-    public byte[] receive() throws IOException, SocketTimeoutException
-    {
-        byte[] messageBuffer = new byte[Util.MAX_SIZE];
+    public byte[] receive(boolean isMaxSize) throws IOException, SocketTimeoutException
+    {   
+        byte[] messageBuffer = new byte[Util.NORMAL_SIZE];
+
+        if (isMaxSize)
+            messageBuffer = new byte[Util.MAX_SIZE];
+
         DatagramPacket receivingPacket = new DatagramPacket(messageBuffer, messageBuffer.length);
 
         //Timeout in milliseconds
@@ -105,7 +110,7 @@ public class Client{
     }
 
     //Wrap send and receive together for reusibility
-    public byte[] routineSendReceive(byte[] message) throws IOException, SocketTimeoutException
+    public byte[] routineSendReceive(byte[] message, boolean useMaxSize) throws IOException, SocketTimeoutException
     {   
         int numTimeouts = 0;
         int maxTimeouts = 10; // @TODO: Move to constants
@@ -117,7 +122,7 @@ public class Client{
         while (numTimeouts < maxTimeouts){
             try{
                 send(message);
-                response = receive();
+                response = receive(useMaxSize);
                 break;
             }
             catch (SocketTimeoutException e){
@@ -175,6 +180,16 @@ public class Client{
         int messageID;
         byte[] payload;
         int payloadSize;
+
+        //Max size or not
+        boolean useMaxSize = false;
+
+        // For response
+        byte serverCommMethod;
+        byte serverMsgType;
+        int serverMsgID;
+        byte[] serverPayload;
+        int serverPayloadSize;
 
         //Client client = new Client(host,port);
         Client client = new Client(host,port,timeout,atMostOnce,simulateFail,probFailure);
@@ -261,15 +276,31 @@ public class Client{
                     System.arraycopy(facilityType, 0, payload, 0, facilityType.length);
                     System.arraycopy(facilitySelection, 0, payload, facilityType.length, facilitySelection.length);
                     System.arraycopy(dayOfBooking, 0, payload, facilityType.length+facilitySelection.length, dayOfBooking.length);
+                    
+                    //DEBUG
+                    System.out.println("[DEBUG][SENT TO SERVER - METHOD: " + communicationMethod + ", MESS_TYPE: "
+                    + requestType + ", MESS_ID: " + messageID + ", SIZE: " + payloadSize + ", DATA: " + payload.toString());
 
                     //Create Message
                     request = Util.getMessageByte(communicationMethod, requestType, messageID, payloadSize, payload);
                     
                     //Send and Receive
-                    response = client.routineSendReceive(request);
+                    useMaxSize = true;
+                    response = client.routineSendReceive(request, useMaxSize);
 
-                    //TODO: Demarshall handling
-                    receivedString = new String(response, StandardCharsets.UTF_8);
+                    //server sent data
+                    serverCommMethod = Util.getCommMethod(response);
+                    serverMsgType = Util.getMsgType(response);
+                    serverMsgID   = Util.getMsgID(response);
+                    serverPayloadSize   = Util.getPayloadSize(response);
+                    serverPayload     = Util.getPayload(response);
+
+                    //Display for debug purpose
+                    System.out.println("[DEBUG][SENT FROM SERVER - METHOD: " + serverCommMethod + ", MESS_TYPE: "
+                    + serverMsgType + ", MESS_ID: " + serverMsgID + ", SIZE: " + serverPayloadSize + ", DATA: " + serverPayload.toString());
+                    
+                    //Demarshall and shown
+                    receivedString = Util.unmarshallString(serverPayload);
                     System.out.println("Response: \n" + receivedString);
 
                     break;
@@ -389,15 +420,29 @@ public class Client{
                     System.arraycopy(startTime, 0, payload, facilityType.length+facilitySelection.length+daySelection.length, startTime.length);
                     System.arraycopy(endTime, 0, payload, facilityType.length+facilitySelection.length+daySelection.length+startTime.length, endTime.length);
                     System.arraycopy(userId, 0, payload, facilityType.length+facilitySelection.length+daySelection.length+startTime.length+endTime.length, userId.length);
+                    
+                    //DEBUG
+                    System.out.println("[DEBUG][SENT TO SERVER - METHOD: " + communicationMethod + ", MESS_TYPE: "
+                    + requestType + ", MESS_ID: " + messageID + ", SIZE: " + payloadSize + ", DATA: " + payload.toString());
 
                     //Create Message
                     request = Util.getMessageByte(communicationMethod, requestType, messageID, payloadSize, payload);
 
                     //Send and Receive
-                    response = client.routineSendReceive(request);
+                    response = client.routineSendReceive(request,useMaxSize);
 
-                    //TODO Demarshall
-                    receivedString = new String(response, StandardCharsets.UTF_8);
+                    //server sent data
+                    serverCommMethod = Util.getCommMethod(response);
+                    serverMsgType = Util.getMsgType(response);
+                    serverMsgID   = Util.getMsgID(response);
+                    serverPayloadSize   = Util.getPayloadSize(response);
+                    serverPayload     = Util.getPayload(response);
+
+                    //Display for debug purpose
+                    System.out.println("[DEBUG][SENT FROM SERVER - METHOD: " + serverCommMethod + ", MESS_TYPE: "
+                    + serverMsgType + ", MESS_ID: " + serverMsgID + ", SIZE: " + serverPayloadSize + ", DATA: " + serverPayload.toString());
+
+                    receivedString = Util.unmarshallString(serverPayload);
                     System.out.println("Response: \n" + receivedString);
 
                     
@@ -426,13 +471,27 @@ public class Client{
                     System.arraycopy(bookingID, 0, payload, 0, bookingID.length);
                     System.arraycopy(offsetValue, 0, payload, bookingID.length, offsetValue.length);
 
+                    //DEBUG
+                    System.out.println("[DEBUG][SENT TO SERVER - METHOD: " + communicationMethod + ", MESS_TYPE: "
+                    + requestType + ", MESS_ID: " + messageID + ", SIZE: " + payloadSize + ", DATA: " + payload.toString());
+
                     //Create Message
                     request = Util.getMessageByte(communicationMethod, requestType, messageID, payloadSize, payload);
 
-                    response = client.routineSendReceive(request);
+                    response = client.routineSendReceive(request,useMaxSize);
 
-                    //Demarshall
-                    receivedString = new String(response, StandardCharsets.UTF_8);
+                    //server sent data
+                    serverCommMethod = Util.getCommMethod(response);
+                    serverMsgType = Util.getMsgType(response);
+                    serverMsgID   = Util.getMsgID(response);
+                    serverPayloadSize   = Util.getPayloadSize(response);
+                    serverPayload     = Util.getPayload(response);
+
+                    //Display for debug purpose
+                    System.out.println("[DEBUG][SENT FROM SERVER - METHOD: " + serverCommMethod + ", MESS_TYPE: "
+                    + serverMsgType + ", MESS_ID: " + serverMsgID + ", SIZE: " + serverPayloadSize + ", DATA: " + serverPayload.toString());
+
+                    receivedString = Util.unmarshallString(serverPayload);
                     System.out.println("Response: \n" + receivedString);
 
                     break;
@@ -463,13 +522,28 @@ public class Client{
                     //Form payload
                     payloadSize = bookingID.length;
                     payload = bookingID;
+
+                    //DEBUG
+                    System.out.println("[DEBUG][SENT TO SERVER - METHOD: " + communicationMethod + ", MESS_TYPE: "
+                    + requestType + ", MESS_ID: " + messageID + ", SIZE: " + payloadSize + ", DATA: " + payload.toString());
+
                     //Create message
                     request = Util.getMessageByte(communicationMethod, requestType, messageID, payloadSize, payload);
 
-                    response = client.routineSendReceive(request);
+                    response = client.routineSendReceive(request,useMaxSize);
 
-                    //Demarshall
-                    receivedString = new String(response, StandardCharsets.UTF_8);
+                    //server sent data
+                    serverCommMethod = Util.getCommMethod(response);
+                    serverMsgType = Util.getMsgType(response);
+                    serverMsgID   = Util.getMsgID(response);
+                    serverPayloadSize   = Util.getPayloadSize(response);
+                    serverPayload     = Util.getPayload(response);
+
+                    //Display for debug purpose
+                    System.out.println("[DEBUG][SENT FROM SERVER - METHOD: " + serverCommMethod + ", MESS_TYPE: "
+                    + serverMsgType + ", MESS_ID: " + serverMsgID + ", SIZE: " + serverPayloadSize + ", DATA: " + serverPayload.toString());
+
+                    receivedString = Util.unmarshallString(serverPayload);
                     System.out.println("Response: \n" + receivedString);
 
                     break;
@@ -495,13 +569,27 @@ public class Client{
                     System.arraycopy(bookingID, 0, payload, 0, bookingID.length);
                     System.arraycopy(offsetValue, 0, payload, bookingID.length, offsetValue.length);
 
+                    //DEBUG
+                    System.out.println("[DEBUG][SENT TO SERVER - METHOD: " + communicationMethod + ", MESS_TYPE: "
+                    + requestType + ", MESS_ID: " + messageID + ", SIZE: " + payloadSize + ", DATA: " + payload.toString());
+
                     //Create Message
                     request = Util.getMessageByte(communicationMethod, requestType, messageID, payloadSize, payload);
 
-                    response = client.routineSendReceive(request);
+                    response = client.routineSendReceive(request,useMaxSize);
 
-                    //TODO: Demarshall
-                    receivedString = new String(response, StandardCharsets.UTF_8);
+                    //server sent data
+                    serverCommMethod = Util.getCommMethod(response);
+                    serverMsgType = Util.getMsgType(response);
+                    serverMsgID   = Util.getMsgID(response);
+                    serverPayloadSize   = Util.getPayloadSize(response);
+                    serverPayload     = Util.getPayload(response);
+
+                    //Display for debug purpose
+                    System.out.println("[DEBUG][SENT FROM SERVER - METHOD: " + serverCommMethod + ", MESS_TYPE: "
+                    + serverMsgType + ", MESS_ID: " + serverMsgID + ", SIZE: " + serverPayloadSize + ", DATA: " + serverPayload.toString());
+
+                    receivedString = Util.unmarshallString(serverPayload);
                     System.out.println("Response: \n" + receivedString);
 
                     break;

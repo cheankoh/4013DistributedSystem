@@ -81,7 +81,7 @@ public class Server {
     //Receiving a MARSHALLED byte array over the UDP network
     public DatagramPacket receive() throws IOException
     {
-        byte[] messageBuffer = new byte[Util.MAX_SIZE];
+        byte[] messageBuffer = new byte[Util.NORMAL_SIZE];
         DatagramPacket receivingPacket = new DatagramPacket(messageBuffer, messageBuffer.length);
         
         //Receive
@@ -100,7 +100,7 @@ public class Server {
     //TODO: Do this as command line if possible
     boolean atMostOnce = true;
     boolean simulateFail = true;
-    double probFailure = 0.8;
+    double probFailure = 0.5;
 
     //About payload to create a reply message
     byte communicationMethod;

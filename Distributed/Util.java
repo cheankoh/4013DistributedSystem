@@ -3,6 +3,8 @@ package Distributed;
 public class Util {
     public static final int MAX_SIZE = 1024;
     public static final int MAX_PAYLOAD = 1014;
+    public static final int NORMAL_SIZE = 64;
+    public static final int NORMAL_PAYLOAD = 54;
     // Implements marshalling and demarshalling logic
     // To run anywhere, should be of public static type
     //Marshalling Int
@@ -74,7 +76,9 @@ public class Util {
 
     //Create our messageByte information
     public static byte[] getMessageByte(byte commMethod, byte msgType, int msgID, int payloadSize, byte[] payload){
-        byte[] toSendByte = new byte[MAX_SIZE];
+        byte[] toSendByte = new byte[NORMAL_SIZE];
+        if (msgType == 1 && commMethod == 2)
+            toSendByte = new byte[MAX_SIZE];
         //concatenation
         toSendByte[0] = commMethod;
         toSendByte[1] = msgType;
