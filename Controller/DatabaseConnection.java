@@ -195,7 +195,7 @@ public class DatabaseConnection {
         }
     }
 
-    public Booking deleteBooking(int bookingID) {
+    public Booking queryBooking(int bookingID) {
         try {
             Statement getFacility = conn.createStatement();
             ResultSet result = getFacility.executeQuery("Select * from Booking where bookingID=" + bookingID);
@@ -214,9 +214,6 @@ public class DatabaseConnection {
             } else {
                 return null;
             }
-            PreparedStatement update = conn.prepareStatement("Delete from Booking where bookingID=?");
-            update.setInt(1, bookingID);
-            update.executeUpdate();
             return booking;
         } catch (SQLException s) {
             // TODO: handle exception
@@ -226,6 +223,23 @@ public class DatabaseConnection {
             // TODO: handle exception
             e.printStackTrace();
             return null;
+        }
+    }
+
+    public Boolean deleteBooking(int bookingID) {
+        try {
+            PreparedStatement update = conn.prepareStatement("Delete from Booking where bookingID=?");
+            update.setInt(1, bookingID);
+            update.executeUpdate();
+            return true;
+        } catch (SQLException s) {
+            // TODO: handle exception
+            s.printStackTrace();
+            return false;
+        } catch (Exception e) {
+            // TODO: handle exception
+            e.printStackTrace();
+            return false;
         }
     }
 
