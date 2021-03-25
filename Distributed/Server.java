@@ -231,8 +231,10 @@ public class Server {
         // 3. Change Booking Slot
 
         case 4:
-          ; // 4. Monitor Facility Availibility
-            // callback
+          // 4. Monitor Facility Availibility
+          Boolean isSuccessful = FacilityController.monitorFacility();
+          break;
+        // callback
 
         case 5:
           // 5. Cancel Booking

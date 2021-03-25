@@ -422,4 +422,9 @@ public class FacilityController {
         shiftResult[1] = newBookingID;
         return shiftResult; // Successfully booked and updated in database
     }
+
+    public static Boolean monitorFacility() {
+
+        return true;
+    }
 }
