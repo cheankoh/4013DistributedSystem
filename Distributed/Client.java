@@ -105,6 +105,19 @@ public class Client {
         return receivingPacket.getData();
     }
 
+    // Receiving a MARSHALLED byte array over the UDP network
+    public byte[] receiveCallback() throws IOException{
+        byte[] messageBuffer = new byte[Util.MAX_SIZE];
+
+        DatagramPacket receivingPacket = new DatagramPacket(messageBuffer, messageBuffer.length);
+
+        // Receive
+        clientSocket.receive(receivingPacket);
+        System.out.println("[INFO][RECEIVED CALLBACK BY SERVER]");
+
+        return receivingPacket.getData();
+    }
+
     // Wrap send and receive together for reusibility
     public byte[] routineSendReceive(byte[] message, boolean useMaxSize) throws IOException, SocketTimeoutException {
         int numTimeouts = 0;
@@ -601,7 +614,8 @@ public class Client {
                         + Util.encodeHexString(serverPayload) + "]");
 
                 receivedString = Util.unmarshallString(serverPayload);
-                Long t3 = Long.valueOf(receivedString);
+                System.out.println(receivedString);
+                Long t3 = Long.parseLong(receivedString);
                 while (System.currentTimeMillis() < t3 + (Long.valueOf(duration) * 1000)) {
                     try {
                         response = client.receive(true);
