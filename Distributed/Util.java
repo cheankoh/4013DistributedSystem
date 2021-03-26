@@ -36,6 +36,43 @@ public class Util {
         }
     }
 
+    //Marshalling Long
+    public static byte[] marshall(long x){
+        //Bit-shifting into an array
+        byte[] arrayByte = new byte[]{
+            (byte)((x >> 56) & 0xffL),
+            (byte)((x >> 48) & 0xffL),
+            (byte)((x >> 40) & 0xffL),
+            (byte)((x >> 32) & 0xffL),
+            (byte)((x >> 24) & 0xffL),
+            (byte)((x >> 16) & 0xffL),
+            (byte)((x >> 8) & 0xffL),
+            (byte)((x >> 0) & 0xffL)
+        };
+        return arrayByte;
+    }
+
+    //Demarshalling Long
+    public static long unmarshallLong(byte[] x){
+        //Ensure that the byte array given is not empty or more/less than 8B (LONG size)
+        if (x == null || x.length != 8)
+            return 0x0;
+        else
+        {
+            long longValue = (long)(
+                (0xffL & x[0]) << 56 |
+                (0xffL & x[1]) << 48 |
+                (0xffL & x[2]) << 40 |
+                (0xffL & x[3]) << 32 |
+                (0xffL & x[4]) << 24 |
+                (0xffL & x[5]) << 16 |
+                (0xffL & x[6]) << 8  |
+                (0xffL & x[7]) << 0
+            );
+            return longValue;
+        }
+    }
+
     //Marshalling String
     public static byte[] marshall(String s){
         //Convert to char array of size 2 each
@@ -205,22 +242,27 @@ public class Util {
     public static void main(String[] args)
     {
         String aString = "I am an Idiot Sandwich 123456";
-        int anInt = 123456789;
+        int anInt = 2147483647;
+        long aLong = -9223372036854775808L;
 
         //Marshall
         byte[] stringByte = marshall(aString);
         byte[] intByte = marshall(anInt);
+        byte[] longByte = marshall(aLong);
 
         System.out.println(encodeHexString(stringByte));
         System.out.println(encodeHexString(intByte));
+        System.out.println(encodeHexString(longByte));
 
         //Demarshall
         String aString_ = unmarshallString(stringByte);
         int anInt_ = unmarshallInt(intByte);
+        long aLong_ = unmarshallLong(longByte);
 
         //Print out
         System.out.println("Demarshalled String: " + aString_);
         System.out.println("Demarshalled Int: " + anInt_);
+        System.out.println("Demarshalled Long: " + aLong_);
 
     }
 }
