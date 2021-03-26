@@ -181,15 +181,38 @@ public class Util {
         return unmarshallInt(offset);
     }
 
+
+    //convert 1B to 2 Hex number
+    public static String toHex(byte x) {
+        char[] hexadecimal = new char[2];
+        hexadecimal[0] = Character.forDigit((x >> 4) & 0xF, 16);
+        hexadecimal[1] = Character.forDigit((x & 0xF), 16);
+        return new String(hexadecimal);
+    }
+    
+    //Convert a byte array into a hex string
+    public static String encodeHexString(byte[] byteArray) {
+        StringBuffer hexadecimalString = new StringBuffer();
+        //Convert each byte to 2 Hex digits
+        for (int i = 0; i < byteArray.length; i++) {
+            hexadecimalString.append(toHex(byteArray[i]));
+            hexadecimalString.append(' ');
+        }
+        return hexadecimalString.toString();
+    }
+
     //Test
     public static void main(String[] args)
     {
         String aString = "I am an Idiot Sandwich 123456";
-        int anInt = 36590;
+        int anInt = 123456789;
 
         //Marshall
         byte[] stringByte = marshall(aString);
         byte[] intByte = marshall(anInt);
+
+        System.out.println(encodeHexString(stringByte));
+        System.out.println(encodeHexString(intByte));
 
         //Demarshall
         String aString_ = unmarshallString(stringByte);

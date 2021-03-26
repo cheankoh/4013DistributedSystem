@@ -279,7 +279,7 @@ public class Client{
                     
                     //DEBUG
                     System.out.println("[DEBUG][SENT TO SERVER - METHOD: " + communicationMethod + ", MESS_TYPE: "
-                    + requestType + ", MESS_ID: " + messageID + ", SIZE: " + payloadSize + ", DATA: " + payload.toString());
+                    + requestType + ", MESS_ID: " + messageID + ", SIZE: " + payloadSize + ", DATA: " + Util.encodeHexString(payload) + "]");
 
                     //Create Message
                     request = Util.getMessageByte(communicationMethod, requestType, messageID, payloadSize, payload);
@@ -297,7 +297,7 @@ public class Client{
 
                     //Display for debug purpose
                     System.out.println("[DEBUG][SENT FROM SERVER - METHOD: " + serverCommMethod + ", MESS_TYPE: "
-                    + serverMsgType + ", MESS_ID: " + serverMsgID + ", SIZE: " + serverPayloadSize + ", DATA: " + serverPayload.toString());
+                    + serverMsgType + ", MESS_ID: " + serverMsgID + ", SIZE: " + serverPayloadSize + ", DATA: " + Util.encodeHexString(serverPayload) + "]" );
                     
                     //Demarshall and shown
                     receivedString = Util.unmarshallString(serverPayload);
@@ -423,7 +423,7 @@ public class Client{
                     
                     //DEBUG
                     System.out.println("[DEBUG][SENT TO SERVER - METHOD: " + communicationMethod + ", MESS_TYPE: "
-                    + requestType + ", MESS_ID: " + messageID + ", SIZE: " + payloadSize + ", DATA: " + payload.toString());
+                    + requestType + ", MESS_ID: " + messageID + ", SIZE: " + payloadSize + ", DATA: " + Util.encodeHexString(payload) + "]" );
 
                     //Create Message
                     request = Util.getMessageByte(communicationMethod, requestType, messageID, payloadSize, payload);
@@ -440,7 +440,7 @@ public class Client{
 
                     //Display for debug purpose
                     System.out.println("[DEBUG][SENT FROM SERVER - METHOD: " + serverCommMethod + ", MESS_TYPE: "
-                    + serverMsgType + ", MESS_ID: " + serverMsgID + ", SIZE: " + serverPayloadSize + ", DATA: " + serverPayload.toString());
+                    + serverMsgType + ", MESS_ID: " + serverMsgID + ", SIZE: " + serverPayloadSize + ", DATA: " + Util.encodeHexString(serverPayload) + "]" );
 
                     receivedString = Util.unmarshallString(serverPayload);
                     System.out.println("Response: \n" + receivedString);
@@ -473,7 +473,7 @@ public class Client{
 
                     //DEBUG
                     System.out.println("[DEBUG][SENT TO SERVER - METHOD: " + communicationMethod + ", MESS_TYPE: "
-                    + requestType + ", MESS_ID: " + messageID + ", SIZE: " + payloadSize + ", DATA: " + payload.toString());
+                    + requestType + ", MESS_ID: " + messageID + ", SIZE: " + payloadSize + ", DATA: " + Util.encodeHexString(payload) + "]" );
 
                     //Create Message
                     request = Util.getMessageByte(communicationMethod, requestType, messageID, payloadSize, payload);
@@ -489,7 +489,7 @@ public class Client{
 
                     //Display for debug purpose
                     System.out.println("[DEBUG][SENT FROM SERVER - METHOD: " + serverCommMethod + ", MESS_TYPE: "
-                    + serverMsgType + ", MESS_ID: " + serverMsgID + ", SIZE: " + serverPayloadSize + ", DATA: " + serverPayload.toString());
+                    + serverMsgType + ", MESS_ID: " + serverMsgID + ", SIZE: " + serverPayloadSize + ", DATA: " + Util.encodeHexString(serverPayload) + "]" );
 
                     receivedString = Util.unmarshallString(serverPayload);
                     System.out.println("Response: \n" + receivedString);
@@ -525,7 +525,7 @@ public class Client{
 
                     //DEBUG
                     System.out.println("[DEBUG][SENT TO SERVER - METHOD: " + communicationMethod + ", MESS_TYPE: "
-                    + requestType + ", MESS_ID: " + messageID + ", SIZE: " + payloadSize + ", DATA: " + payload.toString());
+                    + requestType + ", MESS_ID: " + messageID + ", SIZE: " + payloadSize + ", DATA: " + Util.encodeHexString(payload) + "]" );
 
                     //Create message
                     request = Util.getMessageByte(communicationMethod, requestType, messageID, payloadSize, payload);
@@ -541,7 +541,7 @@ public class Client{
 
                     //Display for debug purpose
                     System.out.println("[DEBUG][SENT FROM SERVER - METHOD: " + serverCommMethod + ", MESS_TYPE: "
-                    + serverMsgType + ", MESS_ID: " + serverMsgID + ", SIZE: " + serverPayloadSize + ", DATA: " + serverPayload.toString());
+                    + serverMsgType + ", MESS_ID: " + serverMsgID + ", SIZE: " + serverPayloadSize + ", DATA: " + Util.encodeHexString(serverPayload) + "]" );
 
                     receivedString = Util.unmarshallString(serverPayload);
                     System.out.println("Response: \n" + receivedString);
@@ -571,7 +571,7 @@ public class Client{
 
                     //DEBUG
                     System.out.println("[DEBUG][SENT TO SERVER - METHOD: " + communicationMethod + ", MESS_TYPE: "
-                    + requestType + ", MESS_ID: " + messageID + ", SIZE: " + payloadSize + ", DATA: " + payload.toString());
+                    + requestType + ", MESS_ID: " + messageID + ", SIZE: " + payloadSize + ", DATA: " + Util.encodeHexString(payload) + "]" );
 
                     //Create Message
                     request = Util.getMessageByte(communicationMethod, requestType, messageID, payloadSize, payload);
@@ -587,8 +587,7 @@ public class Client{
 
                     //Display for debug purpose
                     System.out.println("[DEBUG][SENT FROM SERVER - METHOD: " + serverCommMethod + ", MESS_TYPE: "
-                    + serverMsgType + ", MESS_ID: " + serverMsgID + ", SIZE: " + serverPayloadSize + ", DATA: " + serverPayload.toString());
-
+                    + serverMsgType + ", MESS_ID: " + serverMsgID + ", SIZE: " + serverPayloadSize + ", DATA: " + Util.encodeHexString(serverPayload) + "]" );
                     receivedString = Util.unmarshallString(serverPayload);
                     System.out.println("Response: \n" + receivedString);
 
@@ -606,6 +605,7 @@ public class Client{
                 default:
                     System.out.println("Invald option! Please try again !");
             }
+            System.out.println();
 
         }
 

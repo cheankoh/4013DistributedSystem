@@ -144,7 +144,7 @@ public class Server {
 
         //Display for debug purpose
         System.out.println("[DEBUG][SENT FROM CLIENT - METHOD: " + clientCommMethod + ", MESS_TYPE: "
-        + clientMsgType + ", MESS_ID: " + clientMsgID + ", SIZE: " + clientPayloadSize + ", DATA: " + clientPayload.toString());
+        + clientMsgType + ", MESS_ID: " + clientMsgID + ", SIZE: " + clientPayloadSize + ", DATA: " + Util.encodeHexString(clientPayload) + "]");
 
         //TODO: Find a better way to embedd the application interface
         //TODO: Check and ignore non request
@@ -159,6 +159,7 @@ public class Server {
               System.out.println("[DEBUG][DUPLICATE REQUEST ID FOUND. RETRANSMITTING...]");
               // Just retransmit the message directly from history
               server.send(historyMap.get(key).get(clientMsgID),clientAddress,clientPort);
+              System.out.println();
               continue;
             }
           }
@@ -350,6 +351,7 @@ public class Server {
         // Send the created packet to client
         // serverSocket.send(outputPacket);
         server.send(sendBuffer,clientAddress,clientPort);
+        System.out.println();
       } 
       catch (SocketException e) {
         e.printStackTrace();
