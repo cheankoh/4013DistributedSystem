@@ -250,8 +250,9 @@ public class Server {
             int id = res[1];
             sendString = "Booking Successful.\n Booking ID: " + id
                 + ". Please remember your BookingID to update/delete";
-
-            List<Integer[][]> callbackAvail = FacilityController.queryAvailability(dayOfWeek, facilityTypeId,
+            List<Integer> temp = new ArrayList<Integer>();
+            temp.add(dayofWeek);
+            List<Integer[][]> callbackAvail = FacilityController.queryAvailability(temp, facilityTypeId,
                 facilitySelection, Facilitylist);
             String callbackString = "";
             for (Integer[][] slots : callbackAvail) {
