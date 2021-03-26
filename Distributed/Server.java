@@ -20,6 +20,9 @@ import Model.Booking;
 import Controller.DatabaseConnection;
 import Controller.FacilityController;
 
+import Distributed.Util;
+import Distributed.HistoryKey;
+
 public class Server {
   /* Attributes for server */
   private DatagramSocket serverSocket;
@@ -74,56 +77,94 @@ public class Server {
     System.out.println("[INFO][SENT A MESSAGE TO " + targetIP + ":" + targetPort + " ]");
   }
 
-  // TODO: Receiving a MARSHALLED byte array over the UDP network
-  // public byte[] receive() throws IOException
-
-  public DatagramPacket receive() throws IOException {
-    // TODO: How to determine what is the length of the receiving packet
-    // Hard code first - Best practice is to keep to one UDP and assume max possible
-    // size (waste still better)
-    byte[] messageBuffer = new byte[1024];
-    DatagramPacket receivingPacket = new DatagramPacket(messageBuffer, messageBuffer.length);
-
-    // Receive
-    serverSocket.receive(receivingPacket);
-    System.out
-        .println("[INFO][RECEIVED REQUEST" + receivingPacket.getAddress() + ":" + receivingPacket.getPort() + "]");
-
-    // return messageBuffer;
-
-    // TODO: Temporary
-    return receivingPacket;
+  //Receiving a MARSHALLED byte array over the UDP network
+  public DatagramPacket receive() throws IOException
+  {
+      byte[] messageBuffer = new byte[Util.NORMAL_SIZE];
+      DatagramPacket receivingPacket = new DatagramPacket(messageBuffer, messageBuffer.length);
+      
+      //Receive
+      serverSocket.receive(receivingPacket);
+      System.out.println("[INFO][RECEIVED REQUEST FROM " + receivingPacket.getAddress() + ":" + receivingPacket.getPort() + "]");
+      
+      return receivingPacket;
   }
-
-  // TODO Higher receive - process - send reply routine
-  // Extracting information
-  // InetAddress sourceIP = receivingPacket.getAddress();
-  // int sourcePort = receivingPacket.getPort();
-
+    
+    //TODO Higher receive - process - send reply routine
+    //Extracting information
+    // InetAddress sourceIP = receivingPacket.getAddress();
+    // int sourcePort = receivingPacket.getPort();
+  
   public static void main(String[] args) throws IOException {
-    // TODO: Do this as command line if possible
-    boolean atMostOnce = false;
+    //TODO: Do this as command line if possible
+    boolean atMostOnce = true;
     boolean simulateFail = true;
-    double probFailure = 0.2;
+    double probFailure = 0.5;
 
-    // Set up constructor
-    Server server = new Server(atMostOnce, simulateFail, probFailure);
+    //About payload to create a reply message
+    byte communicationMethod;
+    byte replyType;
+    int messageID;
+    byte[] payload;
+    int payloadSize;
+    
+    //Set up constructor
+    Server server = new Server(atMostOnce,simulateFail,probFailure);
     System.out.println("[INFO][SERVER INITIATED]");
+
+    //History if atMostOnce semantic is true
+    //This store IP/ Port in string as key and Array
+    HashMap<HistoryKey,HashMap<Integer,byte[]>> historyMap = null;
+    if (atMostOnce){
+      System.out.println("[INFO][AT MOST ONCE SEMANTICS USED]");
+      historyMap = new HashMap<HistoryKey,HashMap<Integer,byte[]>>();
+    }
+    else{
+      System.out.println("[INFO][AT LEAST ONCE SEMANTICS USED]");
+    }
+
     while (true) {
       try {
         DatabaseConnection db = new DatabaseConnection();
         System.out.println("[INFO][MYSQL CONNECTION SUCCESSFULLY ESTABLISHED...]");
         System.out.println("[INFO][WAITING FOR REQUEST...]");
-        DatagramPacket inputPacket = server.receive();
+        DatagramPacket received = server.receive();
+        byte[] inputPacket = received.getData();
 
-        // TODO Check the format of send - received
+        // Obtain client's IP address and the port
+        InetAddress clientAddress = received.getAddress();
+        int clientPort = received.getPort();
+  
+        //client sent data
+        byte clientCommMethod = Util.getCommMethod(inputPacket);
+        byte clientMsgType = Util.getMsgType(inputPacket);
+        int  clientMsgID   = Util.getMsgID(inputPacket);
+        int  clientPayloadSize   = Util.getPayloadSize(inputPacket);
+        byte[] clientPayload     = Util.getPayload(inputPacket);
 
-        // Printing out the client sent data
-        String receivedData = new String(inputPacket.getData());
-        System.out.println("Sent from the client: " + receivedData);
+        //Display for debug purpose
+        System.out.println("[DEBUG][SENT FROM CLIENT - METHOD: " + clientCommMethod + ", MESS_TYPE: "
+        + clientMsgType + ", MESS_ID: " + clientMsgID + ", SIZE: " + clientPayloadSize + ", DATA: " + Util.encodeHexString(clientPayload) + "]");
 
-        // TODO: Find a better way to embedd the application interface
+        //TODO: Find a better way to embedd the application interface
+        //TODO: Check and ignore non request
 
+        //Check history if AT MOST ONCE
+        if(atMostOnce){
+          System.out.println("[DEBUG][CHECKING REQUEST HISTORY FOR DUPLICATES]");
+          HistoryKey key = new HistoryKey(clientAddress.toString(),clientPort);
+          if (historyMap.containsKey(key)){
+            System.out.println("[DEBUG][CLIENT IP & PORT FOUND. CHECKING REQUEST ID]");
+            if (historyMap.get(key).containsKey(clientMsgID)){
+              System.out.println("[DEBUG][DUPLICATE REQUEST ID FOUND. RETRANSMITTING...]");
+              // Just retransmit the message directly from history
+              server.send(historyMap.get(key).get(clientMsgID),clientAddress,clientPort);
+              System.out.println();
+              continue;
+            }
+          }
+        }
+  
         // Get the facility data from facilities.txt
         ArrayList<Facility> Facilitylist = new ArrayList<Facility>();
         ArrayList<Booking> Bookinglist = new ArrayList<Booking>();
@@ -143,18 +184,21 @@ public class Server {
         Facilitylist = db.getFacilityList();
         Bookinglist = db.getBookingList();
         String sendString = "";
-        // requestID = number that user chose for operation.
-        int requestId = Character.getNumericValue(receivedData.charAt(0));
-        switch (requestId) {
+
+        communicationMethod = 2;
+        replyType = clientMsgType;
+        messageID = 0;
+
+        switch (clientMsgType) {
         case 1: // 1. Check Facility Availibility.
-
-          facilityTypeId = Character.getNumericValue(receivedData.charAt(1));
-          facilitySelection = Character.getNumericValue(receivedData.charAt(2));
-
+  
+          facilityTypeId = Util.getFacilityType(clientPayload);
+          facilitySelection = Util.getFacilityNum(clientPayload);
+  
           List<Integer> dayOfWeek = new ArrayList<Integer>();
-          numDaysHead = Character.getNumericValue(receivedData.charAt(3));
+          numDaysHead = Util.getDate(clientPayload).charAt(0);
           dayOfWeek.add(numDaysHead);
-          numDaysTail = Character.getNumericValue(receivedData.charAt(4));
+          numDaysTail = Util.getDate(clientPayload).charAt(1);
           dayOfWeek.add(numDaysTail);
 
           // facilitySelection = 1 :First facility in the respective facility type
@@ -177,59 +221,63 @@ public class Server {
           break;
 
         case 2:
-          facilityTypeId = Character.getNumericValue(receivedData.charAt(1));
-          facilitySelection = Character.getNumericValue(receivedData.charAt(2));
-          dayofWeek = Character.getNumericValue(receivedData.charAt(3));
-          startTime = Character.getNumericValue(receivedData.charAt(4));
-          endTime = Character.getNumericValue(receivedData.charAt(5));
-          userID = Character.getNumericValue(receivedData.charAt(6));
+          facilityTypeId = Util.getFacilityType(clientPayload);
+          facilitySelection = Util.getFacilityNum(clientPayload);
+          dayofWeek = Util.getDayOfWeek(clientPayload);
+          startTime = Util.getStartSlot(clientPayload);
+          endTime = Util.getStopSlot(clientPayload);
+          userID = Util.getUserID(clientPayload);
+      
+          System.out.println("facilityTypeId: "+ facilityTypeId);
+          System.out.println("facilitySelection: "+ facilitySelection);
+          System.out.println("dayofWeek: "+ dayofWeek);
+          System.out.println("startTime: "+ startTime);
+          System.out.println("endTime: "+ endTime);
+          System.out.println("userID: "+ userID);
+  
+  
+          int[] res = FacilityController.bookFacility(Facilitylist,facilityTypeId,facilitySelection,dayofWeek,startTime,endTime,userID,db);
+          System.out.println("res: "+ res);
 
-          System.out.println("facilityTypeId: " + facilityTypeId);
-          System.out.println("facilitySelection: " + facilitySelection);
-          System.out.println("dayofWeek: " + dayofWeek);
-          System.out.println("startTime: " + startTime);
-          System.out.println("endTime: " + endTime);
-          System.out.println("userID: " + userID);
-
-          int[] res = FacilityController.bookFacility(Facilitylist, facilityTypeId, facilitySelection, dayofWeek,
-              startTime, endTime, userID, db);
-          System.out.println("res: " + res);
-
-          if (res[0] == 1) {
+          if(res[0]==1){
             int id = res[1];
-            sendString = "Booking Succesful.\n Booking ID: " + id + ". Please remember your BookingID to update/delete";
-          } else if (res[0] == -1) {
-            // sendString = "Booking Failed: Wrong ID";
-            sendString = "Booking Failed: Invalid selection for facility.";
-          } else if (res[0] == -2) {
-            sendString = "Booking Failed: Timeslot already booked";
+            sendString = "Booking Succesful.\n Booking ID: "+ id + ". Please remember your BookingID to update/delete" ;
+          }else if(res[0]==2){
+            replyType = 0;
+            sendString = "Booking Failed: Wrong ID";
+          }else{
+            replyType = 0;
+            sendString = "Booking Failed: Slot not available";
           }
-
+        
           break;
-
+        // res = 1 (Booking Succesful)
+        // res = 2 (Booking Failed: Wrong ID)
+        // res = 3 (Booking Failed: Slot not available)
+  
+  
         case 3:
-          // Shift Booking Slot
-          bookingId = Character.getNumericValue(receivedData.charAt(1));
-          offset = Character.getNumericValue(receivedData.charAt(2));
-          int[] shiftRes = FacilityController.shiftBookingSlot(bookingId, offset, Facilitylist, db);
+          bookingId = Util.getBookingID(clientPayload);
+          offset = Util.getOffset(clientPayload);
+          int[] shiftRes = FacilityController.shiftBookingSlot(bookingId,offset,Facilitylist,db); 
 
-          if (shiftRes[0] == 1) {
-            sendString = "Booking Change Succesful. \n New Booking ID: " + shiftRes[1]
-                + ". Please remember your New BookingID to update/delete";
-          } else if (shiftRes[0] == 0) {
-            sendString = "Booking Shift failed: Unable to create new booking";
-          } else if (shiftRes[0] == -1) {
+          if (shiftRes[0] == 1){
+            sendString = "Booking Change Succesful. \n New Booking ID: "+ shiftRes[1] + ". Please remember your New BookingID to update/delete";
+          }else if (shiftRes[0] ==-1){
+            replyType = 0;
             sendString = "Invalid bookingID";
-
-          } else if (shiftRes[0] == -2) {
+          
+          }else if (shiftRes[0] ==-2){
+            replyType = 0;
             sendString = "Booking Shift failed: Timeslot already booked";
-
-          } else if (shiftRes[0] == -3) {
+          
+          }else {
+            replyType = 0;
             sendString = "Booking Shift failed: Invalid offset";
           }
           break;
-        // 3. Change Booking Slot
-
+           // 3. Change Booking Slot
+  
         case 4:
           // 4. Monitor Facility Availibility
           Boolean isSuccessful = FacilityController.monitorFacility();
@@ -237,29 +285,30 @@ public class Server {
         // callback
 
         case 5:
-          // 5. Cancel Booking
-          bookingId = Character.getNumericValue(receivedData.charAt(1));
-          int deleteRes = FacilityController.cancelBooking(bookingId, Facilitylist, db);
+        // 5. Cancel Booking
+        bookingId = Util.getBookingID(clientPayload);
+        int deleteRes = FacilityController.cancelBooking(bookingId,Facilitylist,db); 
 
-          if (deleteRes == 1) {
-            sendString = "Booking Delete Success";
-          } else {
-            sendString = "Booking Delete Failed";
-          }
-          break;
+        if (deleteRes == 1){
+          sendString = "Booking Delete Success";
+        }else{
+          replyType = 0;
+          sendString = "Booking Delete Failed";
+        }
+        break;
+         
 
         case 6:
-          // 6. Extend Booking Slot
-          bookingId = Character.getNumericValue(receivedData.charAt(1));
-          noOfSlots = Character.getNumericValue(receivedData.charAt(2));
-          int[] extendRes = FacilityController.extendBookingSlot(bookingId, noOfSlots, Facilitylist, db);
-
-          if (extendRes[0] == 1) {
-            sendString = "Booking extended/shortened Succesful. \n New Booking ID: " + extendRes[1]
-                + ". Please remember your New BookingID to update/delete";
-          } else if (extendRes[0] == 0) {
-            sendString = "Booking extend/shorten failed: Unable to create booking";
-          } else if (extendRes[0] == -1) {
+           // 6. Extend Booking Slot
+          bookingId = Util.getBookingID(clientPayload);
+          noOfSlots = Util.getOffset(clientPayload);
+          int[] extendRes = FacilityController.extendBookingSlot(bookingId,noOfSlots,Facilitylist,db); 
+  
+          if (extendRes[0] == 1){
+            sendString = "Booking extended/shortened Succesful. \n New Booking ID: "+ extendRes[1] + ". Please remember your New BookingID to update/delete";
+          }else if (extendRes[0] == 0) {
+            sendString = "Booking extend/shorten failed: Unable to create booking";}
+          else if (extendRes[0] ==-1){
             sendString = "Invalid bookingID";
 
           } else if (extendRes[0] == -2) {
@@ -279,25 +328,34 @@ public class Server {
           System.out.println("Invald option!");
 
         }
-
-        /*
-         * Convert client sent data string to upper case, Convert it to bytes and store
-         * it in the corresponding buffer.
-         */
-        // sendingDataBuffer = receivedData.toUpperCase().getBytes();
-        byte[] sendingDataBuffer = new byte[1024];
-        sendingDataBuffer = sendString.getBytes();
-
-        // Obtain client's IP address and the port
-        InetAddress senderAddress = inputPacket.getAddress();
-        int senderPort = inputPacket.getPort();
+  
+        payload = Util.marshall(sendString);
+        payloadSize = Util.marshall(sendString).length;
 
         // Create new UDP packet with data to send to the client
+        byte[] sendBuffer = Util.getMessageByte(communicationMethod, replyType, messageID, payloadSize, payload);
+        
+        // If AT MOST ONCE, save to history before sending
+        if(atMostOnce){
+          System.out.println("[DEBUG][INSERTING INTO HISTORY]");
+          HistoryKey savedKey = new HistoryKey(clientAddress.toString(), clientPort);
+          if (historyMap.containsKey(savedKey)){
+            historyMap.get(savedKey).put(messageID, sendBuffer);
+            System.out.println("[DEBUG][INSERTED NEW REQUEST ID]");
+          }
+          else{
+            historyMap.put(savedKey,(new HashMap<Integer,byte[]>()));
+            historyMap.get(savedKey).put(messageID, sendBuffer);
+            System.out.println("[DEBUG][INSERTED NEW IP, PORT AND REQUEST ID]");
+          }
+        }
 
         // Send the created packet to client
         // serverSocket.send(outputPacket);
-        server.send(sendingDataBuffer, senderAddress, senderPort);
-      } catch (SocketException e) {
+        server.send(sendBuffer,clientAddress,clientPort);
+        System.out.println();
+      } 
+      catch (SocketException e) {
         e.printStackTrace();
       }
     }
