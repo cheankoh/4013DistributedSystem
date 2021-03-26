@@ -30,7 +30,7 @@ public class Client {
     /* Error simulation */
     private double failRate;
     private boolean simulateFail;
-    /*Keep track of message ID*/
+    /* Keep track of message ID */
     private int messageCounter;
 
     Random rand = new Random();
@@ -66,16 +66,15 @@ public class Client {
         this.messageCounter = 0;
     }
 
-    //TODO: Add setters for other attributes when added.
-    public int getCurMsgCount(){
+    // TODO: Add setters for other attributes when added.
+    public int getCurMsgCount() {
         return this.messageCounter;
     }
 
-    //Sending a MARSHALLED byte array over the server
-    //Return True = need to allocate max; False = no need to allocate so big
-    public void send(byte[] message) throws IOException
-    {
-        //If error and then don't bother sending anything
+    // Sending a MARSHALLED byte array over the server
+    // Return True = need to allocate max; False = no need to allocate so big
+    public void send(byte[] message) throws IOException {
+        // If error and then don't bother sending anything
         double randomProb = rand.nextDouble();
         if (this.simulateFail && randomProb <= this.failRate) {
             System.out.println("[INFO][SIMULATING DROPPING OF REQUEST]");
@@ -87,9 +86,8 @@ public class Client {
         System.out.println("[INFO][SENT A MESSAGE TO SERVER]");
     }
 
-    //Receiving a MARSHALLED byte array over the UDP network
-    public byte[] receive(boolean isMaxSize) throws IOException, SocketTimeoutException
-    {   
+    // Receiving a MARSHALLED byte array over the UDP network
+    public byte[] receive(boolean isMaxSize) throws IOException, SocketTimeoutException {
         byte[] messageBuffer = new byte[Util.NORMAL_SIZE];
 
         if (isMaxSize)
@@ -103,13 +101,12 @@ public class Client {
         // Receive
         clientSocket.receive(receivingPacket);
         System.out.println("[INFO][RECEIVED REPLY BY SERVER]");
-        
-        return receivingPacket.getData(); 
+
+        return receivingPacket.getData();
     }
 
-    //Wrap send and receive together for reusibility
-    public byte[] routineSendReceive(byte[] message, boolean useMaxSize) throws IOException, SocketTimeoutException
-    {   
+    // Wrap send and receive together for reusibility
+    public byte[] routineSendReceive(byte[] message, boolean useMaxSize) throws IOException, SocketTimeoutException {
         int numTimeouts = 0;
         int maxTimeouts = 10; // @TODO: Move to constants
 
@@ -131,9 +128,9 @@ public class Client {
         if (response.length == 0)
             System.out.println("[ERROR][SERVER UNCONTACTABLE]");
 
-        //Bump up message ID
-        this.messageCounter+=1;
-        System.out.println("[DEBUG][BUMPED UP MESSAGE COUNTER TO "+ this.messageCounter + "]");
+        // Bump up message ID
+        this.messageCounter += 1;
+        System.out.println("[DEBUG][BUMPED UP MESSAGE COUNTER TO " + this.messageCounter + "]");
 
         return response;
 
@@ -150,6 +147,7 @@ public class Client {
         String date;
         String receivedString;
         byte[] facilityType;
+        byte[] monitorDuration;
         byte[] facilitySelection;
         byte[] dayOfBooking;
         byte[] startTime;
@@ -171,14 +169,14 @@ public class Client {
         boolean simulateFail = true;
         double probFailure = 0.2;
 
-        //About payload to create a message
+        // About payload to create a message
         byte communicationMethod;
         byte requestType;
         int messageID;
         byte[] payload;
         int payloadSize;
 
-        //Max size or not
+        // Max size or not
         boolean useMaxSize = false;
 
         // For response
@@ -188,8 +186,8 @@ public class Client {
         byte[] serverPayload;
         int serverPayloadSize;
 
-        //Client client = new Client(host,port);
-        Client client = new Client(host,port,timeout,atMostOnce,simulateFail,probFailure);
+        // Client client = new Client(host,port);
+        Client client = new Client(host, port, timeout, atMostOnce, simulateFail, probFailure);
 
         // Main console flow
         boolean quit = false;
@@ -235,328 +233,428 @@ public class Client {
 
                     facility = sc.nextInt();
 
-                    switch(facility){
-                        case 1:     System.out.println("Please select facility number: ");
-                                    System.out.println("====================================");
-                                    System.out.println("1. Learning Pod 1");
-                                    System.out.println("2. Learning Pod 2");
-                                    System.out.println("====================================");
-                                    break;
-                        case 2:     System.out.println("Please select facility number: ");
-                                    System.out.println("====================================");
-                                    System.out.println("1. Lecture Theatre 1");
-                                    System.out.println("2. Lecture Theatre 2");
-                                    System.out.println("====================================");
-                                    break;                    
-                        case 3:     System.out.println("Please select facility number: ");
-                                    System.out.println("====================================");
-                                    System.out.println("1. Tutorial Room 1");
-                                    System.out.println("2. Tutorial Room 2");
-                                    System.out.println("====================================");
-                                    break;                    
-                        case 4:     System.out.println("Please select facility number: ");
-                                    System.out.println("====================================");
-                                    System.out.println("1. Language Room 1");
-                                    System.out.println("2. Language Room 2");
-                                    System.out.println("====================================");
-                                    break;                    }
+                    switch (facility) {
+                    case 1:
+                        System.out.println("Please select facility number: ");
+                        System.out.println("====================================");
+                        System.out.println("1. Learning Pod 1");
+                        System.out.println("2. Learning Pod 2");
+                        System.out.println("====================================");
+                        break;
+                    case 2:
+                        System.out.println("Please select facility number: ");
+                        System.out.println("====================================");
+                        System.out.println("1. Lecture Theatre 1");
+                        System.out.println("2. Lecture Theatre 2");
+                        System.out.println("====================================");
+                        break;
+                    case 3:
+                        System.out.println("Please select facility number: ");
+                        System.out.println("====================================");
+                        System.out.println("1. Tutorial Room 1");
+                        System.out.println("2. Tutorial Room 2");
+                        System.out.println("====================================");
+                        break;
+                    case 4:
+                        System.out.println("Please select facility number: ");
+                        System.out.println("====================================");
+                        System.out.println("1. Language Room 1");
+                        System.out.println("2. Language Room 2");
+                        System.out.println("====================================");
+                        break;
+                    }
                     facilityNumber = sc.nextInt();
-                    
-                    System.out.print("Please enter days [ e.g. 1-7 (range) or 1 (number) ]: ");
-                    //TODO Delimt by "-"
-                    date = sc.next();
-                    date = date.replace("-","");
 
-                    //Marshal String and String to byte array form then stick them together
-                    //First 2B
+                    System.out.print("Please enter days [ e.g. 1-7 (range) or 1 (number) ]: ");
+                    // TODO Delimt by "-"
+                    date = sc.next();
+                    date = date.replace("-", "");
+
+                    // Marshal String and String to byte array form then stick them together
+                    // First 2B
                     communicationMethod = 1;
-                    requestType = (byte)((choice));
-                    //Message ID = current message sent number
+                    requestType = (byte) ((choice));
+                    // Message ID = current message sent number
                     messageID = client.getCurMsgCount();
-                    //Payload - Marshal step
+                    // Payload - Marshal step
                     facilityType = Util.marshall(facility);
                     facilitySelection = Util.marshall(facilityNumber);
                     dayOfBooking = Util.marshall(date);
-                    //Form payload
+                    // Form payload
                     payloadSize = facilityType.length + facilitySelection.length + dayOfBooking.length;
                     payload = new byte[payloadSize];
                     System.arraycopy(facilityType, 0, payload, 0, facilityType.length);
                     System.arraycopy(facilitySelection, 0, payload, facilityType.length, facilitySelection.length);
-                    System.arraycopy(dayOfBooking, 0, payload, facilityType.length+facilitySelection.length, dayOfBooking.length);
-                    
-                    //DEBUG
-                    System.out.println("[DEBUG][SENT TO SERVER - METHOD: " + communicationMethod + ", MESS_TYPE: "
-                    + requestType + ", MESS_ID: " + messageID + ", SIZE: " + payloadSize + ", DATA: " + Util.encodeHexString(payload) + "]");
+                    System.arraycopy(dayOfBooking, 0, payload, facilityType.length + facilitySelection.length,
+                            dayOfBooking.length);
 
-                    //Create Message
+                    // DEBUG
+                    System.out.println("[DEBUG][SENT TO SERVER - METHOD: " + communicationMethod + ", MESS_TYPE: "
+                            + requestType + ", MESS_ID: " + messageID + ", SIZE: " + payloadSize + ", DATA: "
+                            + Util.encodeHexString(payload) + "]");
+
+                    // Create Message
                     request = Util.getMessageByte(communicationMethod, requestType, messageID, payloadSize, payload);
-                    
-                    //Send and Receive
+
+                    // Send and Receive
                     useMaxSize = true;
                     response = client.routineSendReceive(request, useMaxSize);
 
-                    //server sent data
+                    // server sent data
                     serverCommMethod = Util.getCommMethod(response);
                     serverMsgType = Util.getMsgType(response);
-                    serverMsgID   = Util.getMsgID(response);
-                    serverPayloadSize   = Util.getPayloadSize(response);
-                    serverPayload     = Util.getPayload(response);
+                    serverMsgID = Util.getMsgID(response);
+                    serverPayloadSize = Util.getPayloadSize(response);
+                    serverPayload = Util.getPayload(response);
 
-                    //Display for debug purpose
+                    // Display for debug purpose
                     System.out.println("[DEBUG][SENT FROM SERVER - METHOD: " + serverCommMethod + ", MESS_TYPE: "
-                    + serverMsgType + ", MESS_ID: " + serverMsgID + ", SIZE: " + serverPayloadSize + ", DATA: " + Util.encodeHexString(serverPayload) + "]" );
-                    
-                    //Demarshall and shown
+                            + serverMsgType + ", MESS_ID: " + serverMsgID + ", SIZE: " + serverPayloadSize + ", DATA: "
+                            + Util.encodeHexString(serverPayload) + "]");
+
+                    // Demarshall and shown
                     receivedString = Util.unmarshallString(serverPayload);
                     System.out.println("Response: \n" + receivedString);
 
                     break;
 
-            case 2:
-                // Assumption can only book 1 day and max 2 slots ?
-                // Do we allow bulk booking ?
-                System.out.println("BOOK FACILITY");
-                System.out.println("Please enter facility type: ");
-                System.out.println("====================================");
-                System.out.println("1. Learning Pod");
-                System.out.println("2. Lecture Theatre");
-                System.out.println("3. Tutorial Room");
-                System.out.println("4. Language Room");
-                System.out.println("====================================");
-                facility = sc.nextInt();
-
-                switch (facility) {
-                case 1:
-                    System.out.println("Please select facility number: ");
-                    System.out.println("====================================");
-                    System.out.println("1. Learning Pod 1");
-                    System.out.println("2. Learning Pod 2");
-                    System.out.println("====================================");
-                    break;
                 case 2:
-                    System.out.println("Please select facility number: ");
+                    // Assumption can only book 1 day and max 2 slots ?
+                    // Do we allow bulk booking ?
+                    System.out.println("BOOK FACILITY");
+                    System.out.println("Please enter facility type: ");
                     System.out.println("====================================");
-                    System.out.println("1. Lecture Theatre 1");
-                    System.out.println("2. Lecture Theatre 2");
+                    System.out.println("1. Learning Pod");
+                    System.out.println("2. Lecture Theatre");
+                    System.out.println("3. Tutorial Room");
+                    System.out.println("4. Language Room");
                     System.out.println("====================================");
-                case 3:
-                System.out.println("Please select facility number: ");
-                System.out.println("====================================");
-                System.out.println("1. Tutorial Room 1");
-                System.out.println("2. Tutorial Room 2");
-                System.out.println("====================================");
-                break;
-                case 4:
-                    System.out.println("Please select facility number: ");
+                    facility = sc.nextInt();
+
+                    switch (facility) {
+                    case 1:
+                        System.out.println("Please select facility number: ");
+                        System.out.println("====================================");
+                        System.out.println("1. Learning Pod 1");
+                        System.out.println("2. Learning Pod 2");
+                        System.out.println("====================================");
+                        break;
+                    case 2:
+                        System.out.println("Please select facility number: ");
+                        System.out.println("====================================");
+                        System.out.println("1. Lecture Theatre 1");
+                        System.out.println("2. Lecture Theatre 2");
+                        System.out.println("====================================");
+                        break;
+                    case 3:
+                        System.out.println("Please select facility number: ");
+                        System.out.println("====================================");
+                        System.out.println("1. Tutorial Room 1");
+                        System.out.println("2. Tutorial Room 2");
+                        System.out.println("====================================");
+                        break;
+                    case 4:
+                        System.out.println("Please select facility number: ");
+                        System.out.println("====================================");
+                        System.out.println("1. Language Room 1");
+                        System.out.println("2. Language Room 2");
+                        System.out.println("====================================");
+                        break;
+                    }
+                    facilityNumber = sc.nextInt();
+                    System.out.print("Please enter day: ");
                     System.out.println("====================================");
-                    System.out.println("1. Language Room 1");
-                    System.out.println("2. Language Room 2");
+                    System.out.println("1. Monday");
+                    System.out.println("2. Tuesday");
+                    System.out.println("3. Wednesday");
+                    System.out.println("4. Thursday");
+                    System.out.println("5. Friday");
+                    System.out.println("6. Saturday");
+                    System.out.println("7. Sunday");
                     System.out.println("====================================");
+                    dayOfWeek = sc.nextInt();
+                    System.out.print("Please choose start time: ");
+                    System.out.println("====================================");
+                    System.out.println("1. 8:00 am");
+                    System.out.println("2. 8:30 am");
+                    System.out.println("3. 9:00 am");
+                    System.out.println("4. 9:30 am");
+                    System.out.println("5. 10:00 am");
+                    System.out.println("6. 10:30 am");
+                    System.out.println("7. 11:00 am");
+                    System.out.println("8. 11:30 am");
+                    System.out.println("9. 12:00 pm");
+                    System.out.println("10. 12:30 pm");
+                    System.out.println("11. 1:00 pm");
+                    System.out.println("12. 1:30 pm");
+                    System.out.println("13. 2:00 pm");
+                    System.out.println("14. 2:30 pm");
+                    System.out.println("15. 3:00 pm");
+                    System.out.println("16. 3:30 pm");
+                    System.out.println("17. 4:00 pm");
+                    System.out.println("18. 4:30 pm");
+                    System.out.println("====================================");
+                    start = sc.nextInt();
+
+                    System.out.print("Please enter end time: ");
+                    System.out.println("====================================");
+                    System.out.println("1. 8:30 am");
+                    System.out.println("2. 9:00 am");
+                    System.out.println("3. 9:30 am");
+                    System.out.println("4. 10:00 am");
+                    System.out.println("5. 10:30 am");
+                    System.out.println("6. 11:00 am");
+                    System.out.println("7. 11:30 am");
+                    System.out.println("8. 12:00 pm");
+                    System.out.println("9. 12:30 pm");
+                    System.out.println("10. 1:00 pm");
+                    System.out.println("11. 1:30 pm");
+                    System.out.println("12. 2:00 pm");
+                    System.out.println("13. 2:30 pm");
+                    System.out.println("14. 3:00 pm");
+                    System.out.println("15. 3:30 pm");
+                    System.out.println("16. 4:00 pm");
+                    System.out.println("17. 4:30 pm");
+                    System.out.println("18. 5:00 pm");
+                    System.out.println("====================================");
+                    stop = sc.nextInt();
+
+                    // First 2B
+                    communicationMethod = 1;
+                    requestType = (byte) ((choice));
+                    // Message ID = current message sent number
+                    messageID = client.getCurMsgCount();
+                    // Payload - Marshal step
+                    facilityType = Util.marshall(facility);
+                    facilitySelection = Util.marshall(facilityNumber);
+                    daySelection = Util.marshall(dayOfWeek);
+                    startTime = Util.marshall(start);
+                    endTime = Util.marshall(stop);
+                    userId = Util.marshall(userID);
+                    // Form payload
+                    payloadSize = facilityType.length + facilitySelection.length + daySelection.length
+                            + startTime.length + endTime.length + userId.length;
+                    payload = new byte[payloadSize];
+                    System.arraycopy(facilityType, 0, payload, 0, facilityType.length);
+                    System.arraycopy(facilitySelection, 0, payload, facilityType.length, facilitySelection.length);
+                    System.arraycopy(daySelection, 0, payload, facilityType.length + facilitySelection.length,
+                            daySelection.length);
+                    System.arraycopy(startTime, 0, payload,
+                            facilityType.length + facilitySelection.length + daySelection.length, startTime.length);
+                    System.arraycopy(endTime, 0, payload,
+                            facilityType.length + facilitySelection.length + daySelection.length + startTime.length,
+                            endTime.length);
+                    System.arraycopy(userId, 0, payload, facilityType.length + facilitySelection.length
+                            + daySelection.length + startTime.length + endTime.length, userId.length);
+
+                    // DEBUG
+                    System.out.println("[DEBUG][SENT TO SERVER - METHOD: " + communicationMethod + ", MESS_TYPE: "
+                            + requestType + ", MESS_ID: " + messageID + ", SIZE: " + payloadSize + ", DATA: "
+                            + Util.encodeHexString(payload) + "]");
+
+                    // Create Message
+                    request = Util.getMessageByte(communicationMethod, requestType, messageID, payloadSize, payload);
+
+                    // Send and Receive
+                    response = client.routineSendReceive(request, useMaxSize);
+
+                    // server sent data
+                    serverCommMethod = Util.getCommMethod(response);
+                    serverMsgType = Util.getMsgType(response);
+                    serverMsgID = Util.getMsgID(response);
+                    serverPayloadSize = Util.getPayloadSize(response);
+                    serverPayload = Util.getPayload(response);
+
+                    // Display for debug purpose
+                    System.out.println("[DEBUG][SENT FROM SERVER - METHOD: " + serverCommMethod + ", MESS_TYPE: "
+                            + serverMsgType + ", MESS_ID: " + serverMsgID + ", SIZE: " + serverPayloadSize + ", DATA: "
+                            + Util.encodeHexString(serverPayload) + "]");
+
+                    receivedString = Util.unmarshallString(serverPayload);
+                    System.out.println("Response: \n" + receivedString);
+
                     break;
-            }
-            facilityNumber = sc.nextInt();
-            System.out.print("Please enter day: ");
-            System.out.println("====================================");
-            System.out.println("1. Monday");
-            System.out.println("2. Tuesday");
-            System.out.println("3. Wednesday");
-            System.out.println("4. Thursday");
-            System.out.println("5. Friday");
-            System.out.println("6. Saturday");
-            System.out.println("7. Sunday");
-            System.out.println("====================================");
-            dayOfWeek = sc.nextInt();
-            System.out.print("Please choose start time: ");
-            System.out.println("====================================");
-            System.out.println("1. 8:00 am");
-            System.out.println("2. 8:30 am");
-            System.out.println("3. 9:00 am");
-            System.out.println("4. 9:30 am");
-            System.out.println("5. 10:00 am");
-            System.out.println("6. 10:30 am");
-            System.out.println("7. 11:00 am");
-            System.out.println("8. 11:30 am");
-            System.out.println("9. 12:00 pm");
-            System.out.println("10. 12:30 pm");
-            System.out.println("11. 1:00 pm");
-            System.out.println("12. 1:30 pm");
-            System.out.println("13. 2:00 pm");
-            System.out.println("14. 2:30 pm");
-            System.out.println("15. 3:00 pm");
-            System.out.println("16. 3:30 pm");
-            System.out.println("17. 4:00 pm");
-            System.out.println("18. 4:30 pm");
-            System.out.println("====================================");
-            start = sc.nextInt();
 
-            System.out.print("Please enter end time: ");
-            System.out.println("====================================");
-            System.out.println("1. 8:30 am");
-            System.out.println("2. 9:00 am");
-            System.out.println("3. 9:30 am");
-            System.out.println("4. 10:00 am");
-            System.out.println("5. 10:30 am");
-            System.out.println("6. 11:00 am");
-            System.out.println("7. 11:30 am");
-            System.out.println("8. 12:00 pm");
-            System.out.println("9. 12:30 pm");
-            System.out.println("10. 1:00 pm");
-            System.out.println("11. 1:30 pm");
-            System.out.println("12. 2:00 pm");
-            System.out.println("13. 2:30 pm");
-            System.out.println("14. 3:00 pm");
-            System.out.println("15. 3:30 pm");
-            System.out.println("16. 4:00 pm");
-            System.out.println("17. 4:30 pm");
-            System.out.println("18. 5:00 pm");
-            System.out.println("====================================");
-            stop = sc.nextInt();
-        
-            //First 2B
-            communicationMethod = 1;
-            requestType = (byte)((choice));
-            //Message ID = current message sent number
-            messageID = client.getCurMsgCount();
-            //Payload - Marshal step
-            facilityType = Util.marshall(facility);
-            facilitySelection = Util.marshall(facilityNumber);
-            daySelection = Util.marshall(dayOfWeek);
-            startTime = Util.marshall(start);
-            endTime = Util.marshall(stop);
-            userId = Util.marshall(userID);
-            //Form payload
-            payloadSize = facilityType.length+ facilitySelection.length+daySelection.length+startTime.length+endTime.length+ userId.length;
-            payload = new byte[payloadSize];
-            System.arraycopy(facilityType, 0, payload, 0, facilityType.length);
-            System.arraycopy(facilitySelection, 0, payload, facilityType.length, facilitySelection.length);
-            System.arraycopy(daySelection, 0, payload, facilityType.length+facilitySelection.length, daySelection.length);
-            System.arraycopy(startTime, 0, payload, facilityType.length+facilitySelection.length+daySelection.length, startTime.length);
-            System.arraycopy(endTime, 0, payload, facilityType.length+facilitySelection.length+daySelection.length+startTime.length, endTime.length);
-            System.arraycopy(userId, 0, payload, facilityType.length+facilitySelection.length+daySelection.length+startTime.length+endTime.length, userId.length);
-            
-            //DEBUG
-            System.out.println("[DEBUG][SENT TO SERVER - METHOD: " + communicationMethod + ", MESS_TYPE: "
-            + requestType + ", MESS_ID: " + messageID + ", SIZE: " + payloadSize + ", DATA: " + Util.encodeHexString(payload) + "]" );
+                case 3:
+                    System.out.println("CHANGE BOOKING SLOT");
+                    System.out.print("Please enter booking confirmation ID: ");
+                    bookingId = sc.nextInt();
+                    System.out.print("Please enter offset (+ delay - forward): ");
+                    int offset = sc.nextInt();
 
-            //Create Message
-            request = Util.getMessageByte(communicationMethod, requestType, messageID, payloadSize, payload);
+                    // First 2B
+                    communicationMethod = 1;
+                    requestType = (byte) ((choice));
+                    // Message ID = current message sent number
+                    messageID = client.getCurMsgCount();
+                    // Payload - Marshal step
+                    bookingID = Util.marshall(bookingId);
+                    offsetValue = Util.marshall(offset);
+                    // Form payload
+                    payloadSize = bookingID.length + offsetValue.length;
+                    payload = new byte[payloadSize];
+                    System.arraycopy(bookingID, 0, payload, 0, bookingID.length);
+                    System.arraycopy(offsetValue, 0, payload, bookingID.length, offsetValue.length);
 
-            //Send and Receive
-            response = client.routineSendReceive(request,useMaxSize);
+                    // DEBUG
+                    System.out.println("[DEBUG][SENT TO SERVER - METHOD: " + communicationMethod + ", MESS_TYPE: "
+                            + requestType + ", MESS_ID: " + messageID + ", SIZE: " + payloadSize + ", DATA: "
+                            + Util.encodeHexString(payload) + "]");
 
-            //server sent data
-            serverCommMethod = Util.getCommMethod(response);
-            serverMsgType = Util.getMsgType(response);
-            serverMsgID   = Util.getMsgID(response);
-            serverPayloadSize   = Util.getPayloadSize(response);
-            serverPayload     = Util.getPayload(response);
+                    // Create Message
+                    request = Util.getMessageByte(communicationMethod, requestType, messageID, payloadSize, payload);
 
-            //Display for debug purpose
-            System.out.println("[DEBUG][SENT FROM SERVER - METHOD: " + serverCommMethod + ", MESS_TYPE: "
-            + serverMsgType + ", MESS_ID: " + serverMsgID + ", SIZE: " + serverPayloadSize + ", DATA: " + Util.encodeHexString(serverPayload) + "]" );
+                    response = client.routineSendReceive(request, useMaxSize);
 
-            receivedString = Util.unmarshallString(serverPayload);
-            System.out.println("Response: \n" + receivedString);
+                    // server sent data
+                    serverCommMethod = Util.getCommMethod(response);
+                    serverMsgType = Util.getMsgType(response);
+                    serverMsgID = Util.getMsgID(response);
+                    serverPayloadSize = Util.getPayloadSize(response);
+                    serverPayload = Util.getPayload(response);
 
-            break;
+                    // Display for debug purpose
+                    System.out.println("[DEBUG][SENT FROM SERVER - METHOD: " + serverCommMethod + ", MESS_TYPE: "
+                            + serverMsgType + ", MESS_ID: " + serverMsgID + ", SIZE: " + serverPayloadSize + ", DATA: "
+                            + Util.encodeHexString(serverPayload) + "]");
 
-            case 3:
-                System.out.println("CHANGE BOOKING SLOT");
-                System.out.print("Please enter booking confirmation ID: ");
-                bookingId = sc.nextInt();
-                System.out.print("Please enter offset (+ delay - forward): ");
-                int offset = sc.nextInt();
-                
-                //First 2B
-                communicationMethod = 1;
-                requestType = (byte)((choice));
-                //Message ID = current message sent number
-                messageID = client.getCurMsgCount();
-                //Payload - Marshal step
-                bookingID = Util.marshall(bookingId);
-                offsetValue = Util.marshall(offset);
-                //Form payload
-                payloadSize = bookingID.length + offsetValue.length;
-                payload = new byte[payloadSize];
-                System.arraycopy(bookingID, 0, payload, 0, bookingID.length);
-                System.arraycopy(offsetValue, 0, payload, bookingID.length, offsetValue.length);
+                    receivedString = Util.unmarshallString(serverPayload);
+                    System.out.println("Response: \n" + receivedString);
 
-                //DEBUG
-                System.out.println("[DEBUG][SENT TO SERVER - METHOD: " + communicationMethod + ", MESS_TYPE: "
-                + requestType + ", MESS_ID: " + messageID + ", SIZE: " + payloadSize + ", DATA: " + Util.encodeHexString(payload) + "]" );
+                    break;
 
-                //Create Message
-                request = Util.getMessageByte(communicationMethod, requestType, messageID, payloadSize, payload);
+                case 4:
+                    System.out.println("MONITOR FACILITY AVAILIBILITY");
+                    System.out.println("Please enter facility type: ");
+                    System.out.println("====================================");
+                    System.out.println("1. Learning Pod");
+                    System.out.println("2. Lecture Theatre");
+                    System.out.println("3. Tutorial Room");
+                    System.out.println("4. Language Room");
+                    System.out.println("====================================");
+                    facility = sc.nextInt();
 
-                response = client.routineSendReceive(request,useMaxSize);
+                    switch (facility) {
+                    case 1:
+                        System.out.println("Please select facility number: ");
+                        System.out.println("====================================");
+                        System.out.println("1. Learning Pod 1");
+                        System.out.println("2. Learning Pod 2");
+                        System.out.println("====================================");
+                        break;
+                    case 2:
+                        System.out.println("Please select facility number: ");
+                        System.out.println("====================================");
+                        System.out.println("1. Lecture Theatre 1");
+                        System.out.println("2. Lecture Theatre 2");
+                        System.out.println("====================================");
+                        break;
+                    case 3:
+                        System.out.println("Please select facility number: ");
+                        System.out.println("====================================");
+                        System.out.println("1. Tutorial Room 1");
+                        System.out.println("2. Tutorial Room 2");
+                        System.out.println("====================================");
+                        break;
+                    case 4:
+                        System.out.println("Please select facility number: ");
+                        System.out.println("====================================");
+                        System.out.println("1. Language Room 1");
+                        System.out.println("2. Language Room 2");
+                        System.out.println("====================================");
+                        break;
+                    }
+                    facilityNumber = sc.nextInt();
 
-                //server sent data
-                serverCommMethod = Util.getCommMethod(response);
-                serverMsgType = Util.getMsgType(response);
-                serverMsgID   = Util.getMsgID(response);
-                serverPayloadSize   = Util.getPayloadSize(response);
-                serverPayload     = Util.getPayload(response);
+                    System.out.print("Please enter monitor duration (secs): ");
+                    int duration = sc.nextInt();
 
-                //Display for debug purpose
-                System.out.println("[DEBUG][SENT FROM SERVER - METHOD: " + serverCommMethod + ", MESS_TYPE: "
-                + serverMsgType + ", MESS_ID: " + serverMsgID + ", SIZE: " + serverPayloadSize + ", DATA: " + Util.encodeHexString(serverPayload) + "]" );
+                    // First 2B
+                    communicationMethod = 1;
+                    requestType = (byte) ((choice));
+                    // Message ID = current message sent number
+                    messageID = client.getCurMsgCount();
+                    // Payload - Marshal step
+                    facilityType = Util.marshall(facility);
+                    facilitySelection = Util.marshall(facilityNumber);
+                    monitorDuration = Util.marshall(duration);
 
-                receivedString = Util.unmarshallString(serverPayload);
-                System.out.println("Response: \n" + receivedString);
+                    // Form payload
+                    payloadSize = facilityType.length + facilitySelection.length + monitorDuration.length;
+                    payload = new byte[payloadSize];
+                    System.arraycopy(facilityType, 0, payload, 0, facilityType.length);
+                    System.arraycopy(facilitySelection, 0, payload, facilityType.length, facilitySelection.length);
+                    System.arraycopy(monitorDuration, 0, payload, facilitySelection.length + facilityType.length,
+                            monitorDuration.length);
 
-                break;
+                    // DEBUG
+                    System.out.println("[DEBUG][SENT TO SERVER - METHOD: " + communicationMethod + ", MESS_TYPE: "
+                            + requestType + ", MESS_ID: " + messageID + ", SIZE: " + payloadSize + ", DATA: "
+                            + Util.encodeHexString(payload) + "]");
 
-            case 4:
-                System.out.println("MONITOR FACILITY AVAILIBILITY");
-                System.out.print("Please enter facility: ");
-                facility = sc.nextInt();
-                System.out.print("Please enter duration (secs): ");
-                int duration = sc.nextInt();
+                    // Create Message
+                    request = Util.getMessageByte(communicationMethod, requestType, messageID, payloadSize, payload);
 
-                // TODO Some While loop to block
+                    // Send and Receive
+                    response = client.routineSendReceive(request, useMaxSize);
 
-                break;
+                    // server sent data
+                    serverCommMethod = Util.getCommMethod(response);
+                    serverMsgType = Util.getMsgType(response);
+                    serverMsgID = Util.getMsgID(response);
+                    serverPayloadSize = Util.getPayloadSize(response);
+                    serverPayload = Util.getPayload(response);
 
-            case 5:
-                System.out.println("CANCEL BOOKING");
-                System.out.print("Please enter booking ID: ");
-                bookingId = sc.nextInt();
+                    // Display for debug purpose
+                    System.out.println("[DEBUG][SENT FROM SERVER - METHOD: " + serverCommMethod + ", MESS_TYPE: "
+                            + serverMsgType + ", MESS_ID: " + serverMsgID + ", SIZE: " + serverPayloadSize + ", DATA: "
+                            + Util.encodeHexString(serverPayload) + "]");
 
-                //First 2B
-                communicationMethod = 1;
-                requestType = (byte)((choice));
-                //Message ID = current message sent number
-                messageID = client.getCurMsgCount();
-                //Payload - Marshal step
-                bookingID = Util.marshall(bookingId);
-                //Form payload
-                payloadSize = bookingID.length;
-                payload = bookingID;
+                    receivedString = Util.unmarshallString(serverPayload);
+                    System.out.println("Response: \n" + receivedString);
 
-                //DEBUG
-                System.out.println("[DEBUG][SENT TO SERVER - METHOD: " + communicationMethod + ", MESS_TYPE: "
-                + requestType + ", MESS_ID: " + messageID + ", SIZE: " + payloadSize + ", DATA: " + Util.encodeHexString(payload) + "]" );
+                case 5:
+                    System.out.println("CANCEL BOOKING");
+                    System.out.print("Please enter booking ID: ");
+                    bookingId = sc.nextInt();
 
-                //Create message
-                request = Util.getMessageByte(communicationMethod, requestType, messageID, payloadSize, payload);
+                    // First 2B
+                    communicationMethod = 1;
+                    requestType = (byte) ((choice));
+                    // Message ID = current message sent number
+                    messageID = client.getCurMsgCount();
+                    // Payload - Marshal step
+                    bookingID = Util.marshall(bookingId);
+                    // Form payload
+                    payloadSize = bookingID.length;
+                    payload = bookingID;
 
-                response = client.routineSendReceive(request,useMaxSize);
+                    // DEBUG
+                    System.out.println("[DEBUG][SENT TO SERVER - METHOD: " + communicationMethod + ", MESS_TYPE: "
+                            + requestType + ", MESS_ID: " + messageID + ", SIZE: " + payloadSize + ", DATA: "
+                            + Util.encodeHexString(payload) + "]");
 
-                //server sent data
-                serverCommMethod = Util.getCommMethod(response);
-                serverMsgType = Util.getMsgType(response);
-                serverMsgID   = Util.getMsgID(response);
-                serverPayloadSize   = Util.getPayloadSize(response);
-                serverPayload     = Util.getPayload(response);
+                    // Create message
+                    request = Util.getMessageByte(communicationMethod, requestType, messageID, payloadSize, payload);
 
-                //Display for debug purpose
-                System.out.println("[DEBUG][SENT FROM SERVER - METHOD: " + serverCommMethod + ", MESS_TYPE: "
-                + serverMsgType + ", MESS_ID: " + serverMsgID + ", SIZE: " + serverPayloadSize + ", DATA: " + Util.encodeHexString(serverPayload) + "]" );
+                    response = client.routineSendReceive(request, useMaxSize);
 
-                receivedString = Util.unmarshallString(serverPayload);
-                System.out.println("Response: \n" + receivedString);
+                    // server sent data
+                    serverCommMethod = Util.getCommMethod(response);
+                    serverMsgType = Util.getMsgType(response);
+                    serverMsgID = Util.getMsgID(response);
+                    serverPayloadSize = Util.getPayloadSize(response);
+                    serverPayload = Util.getPayload(response);
 
-                break;
+                    // Display for debug purpose
+                    System.out.println("[DEBUG][SENT FROM SERVER - METHOD: " + serverCommMethod + ", MESS_TYPE: "
+                            + serverMsgType + ", MESS_ID: " + serverMsgID + ", SIZE: " + serverPayloadSize + ", DATA: "
+                            + Util.encodeHexString(serverPayload) + "]");
+
+                    receivedString = Util.unmarshallString(serverPayload);
+                    System.out.println("Response: \n" + receivedString);
+
+                    break;
 
                 case 6:
                     System.out.println("EXTEND BOOKING SLOT");
@@ -564,61 +662,64 @@ public class Client {
                     bookingId = sc.nextInt();
                     System.out.print("Please enter offset (+ extend - shorten): ");
                     offset = sc.nextInt();
-                    
-                    //First 2B
+
+                    // First 2B
                     communicationMethod = 1;
-                    requestType = (byte)((choice));
-                    //Message ID = current message sent number
+                    requestType = (byte) ((choice));
+                    // Message ID = current message sent number
                     messageID = client.getCurMsgCount();
-                    //Payload - Marshal step
+                    // Payload - Marshal step
                     bookingID = Util.marshall(bookingId);
                     offsetValue = Util.marshall(offset);
-                    //Form payload
+                    // Form payload
                     payloadSize = bookingID.length + offsetValue.length;
                     payload = new byte[payloadSize];
                     System.arraycopy(bookingID, 0, payload, 0, bookingID.length);
                     System.arraycopy(offsetValue, 0, payload, bookingID.length, offsetValue.length);
 
-                    //DEBUG
+                    // DEBUG
                     System.out.println("[DEBUG][SENT TO SERVER - METHOD: " + communicationMethod + ", MESS_TYPE: "
-                    + requestType + ", MESS_ID: " + messageID + ", SIZE: " + payloadSize + ", DATA: " + Util.encodeHexString(payload) + "]" );
+                            + requestType + ", MESS_ID: " + messageID + ", SIZE: " + payloadSize + ", DATA: "
+                            + Util.encodeHexString(payload) + "]");
 
-                    //Create Message
+                    // Create Message
                     request = Util.getMessageByte(communicationMethod, requestType, messageID, payloadSize, payload);
 
-                    response = client.routineSendReceive(request,useMaxSize);
+                    response = client.routineSendReceive(request, useMaxSize);
 
-                    //server sent data
+                    // server sent data
                     serverCommMethod = Util.getCommMethod(response);
                     serverMsgType = Util.getMsgType(response);
-                    serverMsgID   = Util.getMsgID(response);
-                    serverPayloadSize   = Util.getPayloadSize(response);
-                    serverPayload     = Util.getPayload(response);
+                    serverMsgID = Util.getMsgID(response);
+                    serverPayloadSize = Util.getPayloadSize(response);
+                    serverPayload = Util.getPayload(response);
 
-                    //Display for debug purpose
+                    // Display for debug purpose
                     System.out.println("[DEBUG][SENT FROM SERVER - METHOD: " + serverCommMethod + ", MESS_TYPE: "
-                    + serverMsgType + ", MESS_ID: " + serverMsgID + ", SIZE: " + serverPayloadSize + ", DATA: " + Util.encodeHexString(serverPayload) + "]" );
+                            + serverMsgType + ", MESS_ID: " + serverMsgID + ", SIZE: " + serverPayloadSize + ", DATA: "
+                            + Util.encodeHexString(serverPayload) + "]");
                     receivedString = Util.unmarshallString(serverPayload);
                     System.out.println("Response: \n" + receivedString);
 
                     break;
 
-            case 7:
-                System.out.println("SHUTTING DOWN");
-                quit = true;
-                sc.close();
-                // Close the client socket
-                client.clientSocket.close();
-                System.out.println("... DONE");
-                break;
+                case 7:
+                    System.out.println("SHUTTING DOWN");
+                    quit = true;
+                    sc.close();
+                    // Close the client socket
+                    client.clientSocket.close();
+                    System.out.println("... DONE");
+                    break;
 
-            default:
-                System.out.println("Invald option! Please try again !");
+                default:
+                    System.out.println("Invald option! Please try again !");
+                }
+                System.out.println();
+
             }
-            System.out.println();
 
         }
 
     }
-
 }

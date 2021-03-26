@@ -182,6 +182,12 @@ public class Util {
         System.arraycopy(payload, 8, dayOfWeek, 0, dayOfWeek.length);
         return unmarshallInt(dayOfWeek);
     }
+    public static int getDuration(byte[] payload)
+    {
+        byte[] dayOfWeek = new byte[4];
+        System.arraycopy(payload, 8, dayOfWeek, 0, dayOfWeek.length);
+        return unmarshallInt(dayOfWeek);
+    }
 
     public static int getStartSlot(byte[] payload)
     {
