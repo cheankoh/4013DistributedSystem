@@ -135,6 +135,7 @@ public class FacilityController {
             shiftResult[2] = 0;
             shiftResult[3] = 0;
             shiftResult[4] = 0;
+            System.out.println("oh oh");
             return shiftResult;
 
         }
@@ -338,7 +339,7 @@ public class FacilityController {
         // If success, cont.
         // Else return -1
 
-        int[] shiftResult = new int[2];
+        int[] shiftResult = new int[5];
         if (result == null) {
 
             shiftResult[0] = -1; // Invalid bookingID

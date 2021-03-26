@@ -189,6 +189,7 @@ public class Server {
         int offset;
         int noOfSlots;
         Facilitylist = db.getFacilityList();
+        System.out.println("Facility Size:" + Facilitylist.size());
         Bookinglist = db.getBookingList();
         String sendString = "";
 
@@ -203,10 +204,19 @@ public class Server {
           facilitySelection = Util.getFacilityNum(clientPayload);
 
           List<Integer> dayOfWeek = new ArrayList<Integer>();
-          numDaysHead = Util.getDate(clientPayload).charAt(0);
+
+          String date = Util.getDate(clientPayload, clientPayloadSize);
+          numDaysHead = date.charAt(0) - 48;
           dayOfWeek.add(numDaysHead);
-          numDaysTail = Util.getDate(clientPayload).charAt(1);
+          System.out.println(numDaysHead);
+          try {
+            numDaysTail = date.charAt(1) - 48;
+          } catch (Exception e) {
+            // TODO: handle exception
+            numDaysTail = -1;
+          }
           dayOfWeek.add(numDaysTail);
+          System.out.println(numDaysTail);
 
           // facilitySelection = 1 :First facility in the respective facility type
 
@@ -216,8 +226,10 @@ public class Server {
 
           for (Integer[][] slots : Timeslots) {
             for (Integer[] slot : slots) {
-              if (slot[0] == 0)
+              if (slot[0] == 0) {
                 sendString = sendString.concat(slot[1] + "\n");
+                System.out.println("here");
+              }
             }
           }
           System.out.println("sendString: " + sendString);
@@ -252,6 +264,7 @@ public class Server {
                 + ". Please remember your BookingID to update/delete";
             List<Integer> temp = new ArrayList<Integer>();
             temp.add(dayofWeek);
+            temp.add(-1);
             List<Integer[][]> callbackAvail = FacilityController.queryAvailability(temp, facilityTypeId,
                 facilitySelection, Facilitylist);
             String callbackString = "";
@@ -286,8 +299,9 @@ public class Server {
                 + ". Please remember your New BookingID to update/delete";
             List<Integer> temp = new ArrayList<Integer>();
             temp.add(shiftRes[3]);
-            List<Integer[][]> callbackAvail = FacilityController.queryAvailability(temp, shiftRes[4], shiftRes[2],
-                Facilitylist);
+            temp.add(-1);
+            List<Integer[][]> callbackAvail = FacilityController.queryAvailability(temp, shiftRes[4],
+                shiftRes[2] - (2 * (shiftRes[4]) - 1), Facilitylist);
             String callbackString = "";
             for (Integer[][] slots : callbackAvail) {
               for (Integer[] slot : slots) {
@@ -349,8 +363,9 @@ public class Server {
             sendString = "Booking Delete Success";
             List<Integer> temp = new ArrayList<Integer>();
             temp.add(deleteRes[2]);
-            List<Integer[][]> callbackAvail = FacilityController.queryAvailability(temp, deleteRes[3], deleteRes[1],
-                Facilitylist);
+            temp.add(-1);
+            List<Integer[][]> callbackAvail = FacilityController.queryAvailability(temp, deleteRes[3],
+                deleteRes[1] - (2 * (deleteRes[3]) - 1), Facilitylist);
             String callbackString = "";
             for (Integer[][] slots : callbackAvail) {
               for (Integer[] slot : slots) {
@@ -377,8 +392,9 @@ public class Server {
                 + ". Please remember your New BookingID to update/delete";
             List<Integer> temp = new ArrayList<Integer>();
             temp.add(extendRes[3]);
-            List<Integer[][]> callbackAvail = FacilityController.queryAvailability(temp, extendRes[4], extendRes[2],
-                Facilitylist);
+            temp.add(-1);
+            List<Integer[][]> callbackAvail = FacilityController.queryAvailability(temp, extendRes[4],
+                extendRes[2] - (2 * (extendRes[4] - 1)), Facilitylist);
             String callbackString = "";
             for (Integer[][] slots : callbackAvail) {
               for (Integer[] slot : slots) {
@@ -445,6 +461,8 @@ public class Server {
   public static void callbackHandler(HashMap<CallbackHistoryKey, HashMap<Integer, Long>> cbHistoryKey,
       InetAddress clientIP, int port, int facilityID, String sendString, Server server, byte communicationMethod,
       byte replyType, int messageID) {
+    if (cbHistoryKey == null)
+      return;
     byte[] payload = Util.marshall(sendString);
     int payloadSize = Util.marshall(sendString).length;
     byte[] sendBuffer = Util.getMessageByte(communicationMethod, replyType, messageID, payloadSize, payload);
