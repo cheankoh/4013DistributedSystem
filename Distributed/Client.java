@@ -188,7 +188,7 @@ public class Client {
 
         // Client client = new Client(host,port);
         Client client = new Client(host, port, timeout, atMostOnce, simulateFail, probFailure);
-        
+
         // Main console flow
         boolean quit = false;
         int choice;
@@ -565,10 +565,9 @@ public class Client {
                         break;
                     }
                     facilityNumber = sc.nextInt();
-                    
+
                     System.out.print("Please enter monitor duration (secs): ");
                     int duration = sc.nextInt();
-
 
                     // First 2B
                     communicationMethod = 1;
@@ -579,13 +578,14 @@ public class Client {
                     facilityType = Util.marshall(facility);
                     facilitySelection = Util.marshall(facilityNumber);
                     monitorDuration = Util.marshall(duration);
-                    
+
                     // Form payload
                     payloadSize = facilityType.length + facilitySelection.length + monitorDuration.length;
                     payload = new byte[payloadSize];
                     System.arraycopy(facilityType, 0, payload, 0, facilityType.length);
                     System.arraycopy(facilitySelection, 0, payload, facilityType.length, facilitySelection.length);
-                    System.arraycopy(monitorDuration, 0, payload, facilitySelection.length+facilityType.length , monitorDuration.length);
+                    System.arraycopy(monitorDuration, 0, payload, facilitySelection.length + facilityType.length,
+                            monitorDuration.length);
 
                     // DEBUG
                     System.out.println("[DEBUG][SENT TO SERVER - METHOD: " + communicationMethod + ", MESS_TYPE: "
