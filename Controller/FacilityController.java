@@ -127,15 +127,17 @@ public class FacilityController {
         // If success, cont.
         // Else return -1
 
-        int[] shiftResult = new int[2];
+        int[] shiftResult = new int[5];
         if (result == null) {
 
             shiftResult[0] = -1; // Invalid bookingID
             shiftResult[1] = 0;
+            shiftResult[2] = 0;
+            shiftResult[3] = 0;
+            shiftResult[4] = 0;
             return shiftResult;
 
         }
-
         // Get getFacilityID, getDate(dayofWeek), getTiming(startTime,endTime) of
         // booking
         int userID = result.getUserID();
@@ -145,6 +147,14 @@ public class FacilityController {
         ArrayList<Integer> timing = result.getTiming();
         int startTime = timing.get(0);
         int endTime = timing.get(1);
+
+        // Get facility type for the callback purposes
+        int facilityType = 0;
+        for (Facility facility : facilityData) {
+            if (facility.getFacilityID() == facilityID) {
+                facilityType = facility.getFacilityType();
+            }
+        }
 
         // Get facility for given facility ID
         Facility targetFacility = new Facility();
@@ -237,19 +247,26 @@ public class FacilityController {
 
         shiftResult[0] = (newBookingID > 0) ? 1 : 0; // 0 is failure to add
         shiftResult[1] = newBookingID;
+        shiftResult[2] = facilityID;
+        shiftResult[3] = date;
+        shiftResult[4] = facilityType;
         return shiftResult; // Successfully booked and updated in database
     }
 
     // public int cancelBooking(int bookingID,ArrayList<Facility>
     // facilityData,ArrayList<Booking> bookingData, Connection connection) {
-    public static int cancelBooking(int bookingID, ArrayList<Facility> facilityData, DatabaseConnection conn) {
+    public static int[] cancelBooking(int bookingID, ArrayList<Facility> facilityData, DatabaseConnection conn) {
 
         Booking result = conn.queryBooking(bookingID); // result ==deleted booking
 
         // If success, cont.
         // Else return -1
+        int[] cancelRes = new int[4];
         if (result == null) {
-            return -1;
+            cancelRes[0] = -1;
+            cancelRes[1] = 0;
+            cancelRes[2] = 0;
+            cancelRes[3] = 0;
         }
 
         // Get getFacilityID, getDate(dayofWeek), getTiming(startTime,endTime) of
@@ -261,6 +278,14 @@ public class FacilityController {
         ArrayList<Integer> timing = result.getTiming();
         int startTime = timing.get(0);
         int endTime = timing.get(1);
+
+        // Get facility type for the callback purposes
+        int facilityType = 0;
+        for (Facility facility : facilityData) {
+            if (facility.getFacilityID() == facilityID) {
+                facilityType = facility.getFacilityType();
+            }
+        }
 
         // Get facility for given facility ID
         Facility targetFacility = new Facility();
@@ -291,7 +316,11 @@ public class FacilityController {
         conn.updateFacility(facilityData);
         conn.deleteBooking(bookingID);
         // Return success
-        return 1;
+        cancelRes[0] = -1;
+        cancelRes[1] = facilityID;
+        cancelRes[2] = date;
+        cancelRes[3] = facilityType;
+        return cancelRes;
 
         // boolean validID = false;
         // if (!validID)
@@ -327,6 +356,14 @@ public class FacilityController {
         ArrayList<Integer> timing = result.getTiming();
         int startTime = timing.get(0);
         int endTime = timing.get(1);
+
+        // Get facility type for the callback purposes
+        int facilityType = 0;
+        for (Facility facility : facilityData) {
+            if (facility.getFacilityID() == facilityID) {
+                facilityType = facility.getFacilityType();
+            }
+        }
 
         // Get facility for given facility ID
         Facility targetFacility = new Facility();
@@ -420,6 +457,9 @@ public class FacilityController {
 
         shiftResult[0] = (newBookingID > 0) ? 1 : 0; // 0 is failure to add
         shiftResult[1] = newBookingID;
+        shiftResult[2] = facilityID;
+        shiftResult[3] = date;
+        shiftResult[4] = facilityType;
         return shiftResult; // Successfully booked and updated in database
     }
 

@@ -248,7 +248,20 @@ public class Server {
 
           if (res[0] == 1) {
             int id = res[1];
-            sendString = "Booking Succesful.\n Booking ID: " + id + ". Please remember your BookingID to update/delete";
+            sendString = "Booking Successful.\n Booking ID: " + id
+                + ". Please remember your BookingID to update/delete";
+
+            List<Integer[][]> callbackAvail = FacilityController.queryAvailability(dayOfWeek, facilityTypeId,
+                facilitySelection, Facilitylist);
+            String callbackString = "";
+            for (Integer[][] slots : callbackAvail) {
+              for (Integer[] slot : slots) {
+                if (slot[0] == 0)
+                  callbackString = callbackString.concat(slot[1] + "\n");
+              }
+            }
+            callbackHandler(cbHistory, clientAddress, clientPort, facilitySelection, callbackString, server,
+                communicationMethod, replyType, messageID);
           } else if (res[0] == 2) {
             replyType = 0;
             sendString = "Booking Failed: Wrong ID";
@@ -270,6 +283,19 @@ public class Server {
           if (shiftRes[0] == 1) {
             sendString = "Booking Change Succesful. \n New Booking ID: " + shiftRes[1]
                 + ". Please remember your New BookingID to update/delete";
+            List<Integer> temp = new ArrayList<Integer>();
+            temp.add(shiftRes[3]);
+            List<Integer[][]> callbackAvail = FacilityController.queryAvailability(temp, shiftRes[4], shiftRes[2],
+                Facilitylist);
+            String callbackString = "";
+            for (Integer[][] slots : callbackAvail) {
+              for (Integer[] slot : slots) {
+                if (slot[0] == 0)
+                  callbackString = callbackString.concat(slot[1] + "\n");
+              }
+            }
+            callbackHandler(cbHistory, clientAddress, clientPort, shiftRes[2], callbackString, server,
+                communicationMethod, replyType, messageID);
           } else if (shiftRes[0] == -1) {
             replyType = 0;
             sendString = "Invalid bookingID";
@@ -287,27 +313,52 @@ public class Server {
 
         case 4:
           // 4. Monitor Facility Availibility
+          int facilityID = Util.getFacilityNum(clientPayload);
+          int duration = Util.getDuration(clientPayload);
           System.out.println("[DEBUG][INSERTING INTO CALLBACK]");
           CallbackHistoryKey savedKey = new CallbackHistoryKey(clientAddress, clientPort);
-          if (cbHistory.containsKey(savedKey)) {
-            cbHistory.get(savedKey).put(facilityID, System.currentTimeMillis() + Long.valueOf(duration) * 1000);
-            System.out.println("[DEBUG][INSERTED NEW REQUEST ID]");
+
+          //
+          long serverTime = System.currentTimeMillis() + Long.valueOf(duration) * 1000;
+          long t3 = serverTime - Long.valueOf(duration); // Server time when finish processing
+          if (cbHistory != null && cbHistory.containsKey(savedKey)) {
+            System.out.println("[DEBUG][CLIENT HAS REGISTERED BEFORE]");
+            if (atMostOnce) { // at most once semantic is used
+              t3 = cbHistory.get(savedKey).get(facilityID) - Long.valueOf(duration) * 1000;
+              System.out.println("[DEBUG][ATMOSTONCE IS USED THUS RETURNING STORED SERVER TIME]");
+            } else { // at least once semantic is used
+              cbHistory.get(savedKey).put(facilityID, serverTime);
+              System.out.println("[DEBUG][ATLEASTONCE IS USED THUS RETURNING NEW SERVER TIME]");
+            }
           } else {
             cbHistory.put(savedKey, (new HashMap<Integer, Long>()));
-            cbHistory.get(savedKey).put(facilityID, System.currentTimeMillis() + Long.valueOf(duration) * 1000);
-            System.out.println("[DEBUG][INSERTED NEW IP, PORT AND REQUEST ID]");
+            cbHistory.get(savedKey).put(facilityID, serverTime);
+            System.out.println("[DEBUG][INSERTED NEW IP, PORT AND REQUEST ID FOR CALLBACK]");
           }
-          Boolean isSuccessful = FacilityController.monitorFacility();
+          // @TODO send t3 back to client
           break;
         // callback
 
         case 5:
           // 5. Cancel Booking
           bookingId = Util.getBookingID(clientPayload);
-          int deleteRes = FacilityController.cancelBooking(bookingId, Facilitylist, db);
+          int[] deleteRes = FacilityController.cancelBooking(bookingId, Facilitylist, db);
 
-          if (deleteRes == 1) {
+          if (deleteRes[0] == 1) {
             sendString = "Booking Delete Success";
+            List<Integer> temp = new ArrayList<Integer>();
+            temp.add(deleteRes[2]);
+            List<Integer[][]> callbackAvail = FacilityController.queryAvailability(temp, deleteRes[3], deleteRes[1],
+                Facilitylist);
+            String callbackString = "";
+            for (Integer[][] slots : callbackAvail) {
+              for (Integer[] slot : slots) {
+                if (slot[0] == 0)
+                  callbackString = callbackString.concat(slot[1] + "\n");
+              }
+            }
+            callbackHandler(cbHistory, clientAddress, clientPort, deleteRes[1], callbackString, server,
+                communicationMethod, replyType, messageID);
           } else {
             replyType = 0;
             sendString = "Booking Delete Failed";
@@ -323,6 +374,19 @@ public class Server {
           if (extendRes[0] == 1) {
             sendString = "Booking extended/shortened Succesful. \n New Booking ID: " + extendRes[1]
                 + ". Please remember your New BookingID to update/delete";
+            List<Integer> temp = new ArrayList<Integer>();
+            temp.add(extendRes[3]);
+            List<Integer[][]> callbackAvail = FacilityController.queryAvailability(temp, extendRes[4], extendRes[2],
+                Facilitylist);
+            String callbackString = "";
+            for (Integer[][] slots : callbackAvail) {
+              for (Integer[] slot : slots) {
+                if (slot[0] == 0)
+                  callbackString = callbackString.concat(slot[1] + "\n");
+              }
+            }
+            callbackHandler(cbHistory, clientAddress, clientPort, extendRes[2], callbackString, server,
+                communicationMethod, replyType, messageID);
           } else if (extendRes[0] == 0) {
             sendString = "Booking extend/shorten failed: Unable to create booking";
           } else if (extendRes[0] == -1) {
@@ -377,16 +441,22 @@ public class Server {
 
   }
 
-  public static boolean callbackHandler(HashMap<CallbackHistoryKey, HashMap<Integer, Long>> cbHistoryKey,
-      InetAddress clientIP, int port, int facilityID) {
-
-    CallbackHistoryKey key = new CallbackHistoryKey(clientIP, port);
-    if (cbHistoryKey.containsKey(key)) {
-      if (cbHistoryKey.get(key).get(facilityID) > System.currentTimeMillis()) {
-        return true;
+  public static void callbackHandler(HashMap<CallbackHistoryKey, HashMap<Integer, Long>> cbHistoryKey,
+      InetAddress clientIP, int port, int facilityID, String sendString, Server server, byte communicationMethod,
+      byte replyType, int messageID) {
+    byte[] payload = Util.marshall(sendString);
+    int payloadSize = Util.marshall(sendString).length;
+    byte[] sendBuffer = Util.getMessageByte(communicationMethod, replyType, messageID, payloadSize, payload);
+    for (CallbackHistoryKey callback : cbHistoryKey.keySet()) {
+      if (cbHistoryKey.get(callback).containsKey(facilityID)) {
+        if (cbHistoryKey.get(callback).get(facilityID) > System.currentTimeMillis()) {
+          try {
+            server.send(sendBuffer, clientIP, port);
+          } catch (Exception e) {
+            // TODO: handle exception
+          }
+        }
       }
     }
-    return false;
-
   }
 }
