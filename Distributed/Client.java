@@ -601,7 +601,32 @@ public class Client {
                         + Util.encodeHexString(serverPayload) + "]");
 
                 receivedString = Util.unmarshallString(serverPayload);
+                Long t3 = Long.valueOf(receivedString);
+                while (System.currentTimeMillis() < t3 + (Long.valueOf(duration) * 1000)) {
+                    try {
+                        response = client.receive(true);
+                        // server sent data
+                        serverCommMethod = Util.getCommMethod(response);
+                        serverMsgType = Util.getMsgType(response);
+                        serverMsgID = Util.getMsgID(response);
+                        serverPayloadSize = Util.getPayloadSize(response);
+                        serverPayload = Util.getPayload(response);
+
+                        // Display for debug purpose
+                        System.out.println("[DEBUG][CALLBACK FROM SERVER - METHOD: " + serverCommMethod
+                                + ", MESS_TYPE: " + serverMsgType + ", MESS_ID: " + serverMsgID + ", SIZE: "
+                                + serverPayloadSize + ", DATA: " + Util.encodeHexString(serverPayload) + "]");
+                        System.out.println();
+
+                        receivedString = Util.unmarshallString(serverPayload);
+                        System.out.println("Response: \n" + receivedString);
+                    } catch (Exception e) {
+                        // TODO: handle exception
+                        System.out.println("Callback Client error");
+                    }
+                }
                 System.out.println("Response: \n" + receivedString);
+                break;
 
             case 5:
                 System.out.println("CANCEL BOOKING");

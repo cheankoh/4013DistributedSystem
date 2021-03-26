@@ -120,8 +120,7 @@ public class Server {
 
     // History of callback
     // This store IP/ Port in string as key and Array
-    HashMap<CallbackHistoryKey, HashMap<Integer, Long>> cbHistory = null;
-
+    HashMap<CallbackHistoryKey, HashMap<Integer, Long>> cbHistory = new HashMap<CallbackHistoryKey, HashMap<Integer, Long>>();
     if (atMostOnce) {
       System.out.println("[INFO][AT MOST ONCE SEMANTICS USED]");
       historyMap = new HashMap<HistoryKey, HashMap<Integer, byte[]>>();
