@@ -332,24 +332,25 @@ public class Server {
           System.out.println("[DEBUG][INSERTING INTO CALLBACK]");
           CallbackHistoryKey savedKey = new CallbackHistoryKey(clientAddress, clientPort);
 
-          //
+          // Store the client ID (ip&port) and the period of callback
           long serverTime = System.currentTimeMillis() + Long.valueOf(duration) * 1000;
-          long t3 = serverTime - Long.valueOf(duration); // Server time when finish processing
-          if (cbHistory != null && cbHistory.containsKey(savedKey)) {
-            System.out.println("[DEBUG][CLIENT HAS REGISTERED BEFORE]");
+          Long t3 = serverTime - Long.valueOf(duration); // Server time when finish processing
+          if (cbHistory.containsKey(savedKey)) {
+            System.out.println("[INFO][CLIENT HAS REGISTERED BEFORE]");
             if (atMostOnce) { // at most once semantic is used
               t3 = cbHistory.get(savedKey).get(facilityID) - Long.valueOf(duration) * 1000;
-              System.out.println("[DEBUG][ATMOSTONCE IS USED THUS RETURNING STORED SERVER TIME]");
+              System.out.println("[INFO][ATMOSTONCE IS USED THUS RETURNING STORED SERVER TIME]");
             } else { // at least once semantic is used
               cbHistory.get(savedKey).put(facilityID, serverTime);
-              System.out.println("[DEBUG][ATLEASTONCE IS USED THUS RETURNING NEW SERVER TIME]");
+              System.out.println("[INFO][ATLEASTONCE IS USED THUS RETURNING NEW SERVER TIME]");
             }
           } else {
             cbHistory.put(savedKey, (new HashMap<Integer, Long>()));
             cbHistory.get(savedKey).put(facilityID, serverTime);
             System.out.println("[DEBUG][INSERTED NEW IP, PORT AND REQUEST ID FOR CALLBACK]");
           }
-          // @TODO send t3 back to client
+
+          sendString = t3.toString();
           break;
         // callback
 
@@ -462,6 +463,7 @@ public class Server {
       byte replyType, int messageID) {
     if (cbHistoryKey == null)
       return;
+
     byte[] payload = Util.marshall(sendString);
     int payloadSize = Util.marshall(sendString).length;
     byte[] sendBuffer = Util.getMessageByte(communicationMethod, replyType, messageID, payloadSize, payload);
@@ -472,7 +474,12 @@ public class Server {
             server.send(sendBuffer, clientIP, port);
           } catch (Exception e) {
             // TODO: handle exception
+            System.out.println("[DEBUG][ERROR HAS OCCURRED TRYING TO SEND CALLBACK MESSAGE TO REGISTERED CLIENT]");
+            e.printStackTrace();
           }
+        } else {
+          // remove the whole history of that client if the callback is expired
+          cbHistoryKey.remove(callback);
         }
       }
     }
