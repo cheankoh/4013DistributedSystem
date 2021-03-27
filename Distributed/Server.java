@@ -273,8 +273,8 @@ public class Server {
                   callbackString = callbackString.concat(slot[1] + "\n");
               }
             }
-            callbackHandler(cbHistory, clientAddress, clientPort, facilitySelection, callbackString, server,
-                communicationMethod, replyType, messageID);
+            callbackHandler(cbHistory, facilitySelection, callbackString, server, communicationMethod, replyType,
+                messageID);
           } else if (res[0] == 2) {
             replyType = 0;
             sendString = "Booking Failed: Wrong ID";
@@ -308,8 +308,7 @@ public class Server {
                   callbackString = callbackString.concat(slot[1] + "\n");
               }
             }
-            callbackHandler(cbHistory, clientAddress, clientPort, shiftRes[2], callbackString, server,
-                communicationMethod, replyType, messageID);
+            callbackHandler(cbHistory, shiftRes[2], callbackString, server, communicationMethod, replyType, messageID);
           } else if (shiftRes[0] == -1) {
             replyType = 0;
             sendString = "Invalid bookingID";
@@ -373,8 +372,7 @@ public class Server {
                   callbackString = callbackString.concat(slot[1] + "\n");
               }
             }
-            callbackHandler(cbHistory, clientAddress, clientPort, deleteRes[1], callbackString, server,
-                communicationMethod, replyType, messageID);
+            callbackHandler(cbHistory, deleteRes[1], callbackString, server, communicationMethod, replyType, messageID);
           } else {
             replyType = 0;
             sendString = "Booking Delete Failed";
@@ -402,8 +400,7 @@ public class Server {
                   callbackString = callbackString.concat(slot[1] + "\n");
               }
             }
-            callbackHandler(cbHistory, clientAddress, clientPort, extendRes[2], callbackString, server,
-                communicationMethod, replyType, messageID);
+            callbackHandler(cbHistory, extendRes[2], callbackString, server, communicationMethod, replyType, messageID);
           } else if (extendRes[0] == 0) {
             sendString = "Booking extend/shorten failed: Unable to create booking";
           } else if (extendRes[0] == -1) {
@@ -458,20 +455,20 @@ public class Server {
 
   }
 
-  public static void callbackHandler(HashMap<CallbackHistoryKey, HashMap<Integer, Long>> cbHistoryKey,
-      InetAddress clientIP, int port, int facilityID, String sendString, Server server, byte communicationMethod,
-      byte replyType, int messageID) {
+  public static void callbackHandler(HashMap<CallbackHistoryKey, HashMap<Integer, Long>> cbHistoryKey, int facilityID,
+      String sendString, Server server, byte communicationMethod, byte replyType, int messageID) {
     if (cbHistoryKey == null)
       return;
 
     byte[] payload = Util.marshall(sendString);
     int payloadSize = Util.marshall(sendString).length;
     byte[] sendBuffer = Util.getMessageByte(communicationMethod, replyType, messageID, payloadSize, payload);
-    for (CallbackHistoryKey callback : cbHistoryKey.keySet()) {
-      if (cbHistoryKey.get(callback).containsKey(facilityID)) {
-        if (cbHistoryKey.get(callback).get(facilityID) > System.currentTimeMillis()) {
+    for (HashMap.Entry<CallbackHistoryKey, HashMap<Integer, Long>> callback : cbHistoryKey.entrySet()) {
+      if (callback.getValue().containsKey(facilityID)) {
+        if (callback.getValue().get(facilityID) > System.currentTimeMillis()) {
           try {
-            server.send(sendBuffer, clientIP, port);
+            server.send(sendBuffer, callback.getKey().getIPAddress(), callback.getKey().getPort());
+            System.out.println("[DEBUG][SERVER HAS SENT CALLBACK MESSAGE TO CLIENT]");
           } catch (Exception e) {
             // TODO: handle exception
             System.out.println("[DEBUG][ERROR HAS OCCURRED TRYING TO SEND CALLBACK MESSAGE TO REGISTERED CLIENT]");
@@ -479,7 +476,7 @@ public class Server {
           }
         } else {
           // remove the whole history of that client if the callback is expired
-          cbHistoryKey.remove(callback);
+          cbHistoryKey.remove(callback.getKey());
         }
       }
     }

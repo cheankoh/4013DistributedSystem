@@ -106,13 +106,15 @@ public class Client {
     }
 
     // Receiving a MARSHALLED byte array over the UDP network
-    public byte[] receiveCallback() throws IOException{
+    public byte[] receiveCallback(int duration) throws IOException {
         byte[] messageBuffer = new byte[Util.MAX_SIZE];
 
         DatagramPacket receivingPacket = new DatagramPacket(messageBuffer, messageBuffer.length);
 
+        // manually set timeout longer than the while loop by 1 second
+        this.clientSocket.setSoTimeout((duration + 1) * 1000);
         // Receive
-        clientSocket.receive(receivingPacket);
+        this.clientSocket.receive(receivingPacket);
         System.out.println("[INFO][RECEIVED CALLBACK BY SERVER]");
 
         return receivingPacket.getData();
@@ -618,7 +620,7 @@ public class Client {
                 Long t3 = Long.parseLong(receivedString);
                 while (System.currentTimeMillis() < t3 + (Long.valueOf(duration) * 1000)) {
                     try {
-                        response = client.receive(true);
+                        response = client.receiveCallback(duration);
                         // server sent data
                         serverCommMethod = Util.getCommMethod(response);
                         serverMsgType = Util.getMsgType(response);
@@ -634,6 +636,7 @@ public class Client {
 
                         receivedString = Util.unmarshallString(serverPayload);
                         System.out.println("Response: \n" + receivedString);
+                        break;
                     } catch (Exception e) {
                         // TODO: handle exception
                         System.out.println("Callback Client error");

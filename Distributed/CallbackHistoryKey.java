@@ -12,6 +12,14 @@ public class CallbackHistoryKey {
         this.port = port;
     }
 
+    public InetAddress getIPAddress() {
+        return IPAddress;
+    }
+
+    public int getPort() {
+        return port;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o)
