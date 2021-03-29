@@ -112,7 +112,7 @@ public class Client {
         DatagramPacket receivingPacket = new DatagramPacket(messageBuffer, messageBuffer.length);
 
         // manually set timeout longer than the while loop by 1 second
-        this.clientSocket.setSoTimeout((duration + 1) * 1000);
+        this.clientSocket.setSoTimeout((duration) * 1000);
         // Receive
         this.clientSocket.receive(receivingPacket);
         System.out.println("[INFO][RECEIVED CALLBACK BY SERVER]");
@@ -618,7 +618,9 @@ public class Client {
                 receivedString = Util.unmarshallString(serverPayload);
                 System.out.println(receivedString);
                 Long t3 = Long.parseLong(receivedString);
-                while (System.currentTimeMillis() < t3 + (Long.valueOf(duration) * 1000)) {
+                Long timeToEnd = System.currentTimeMillis() - (t3 + (Long.valueOf(duration) * 1000));
+                while (timeToEnd < 0) {
+                    System.out.println("[DEBUG][TIME TO END IS " + timeToEnd.toString() + "]");
                     try {
                         response = client.receiveCallback(duration);
                         // server sent data
@@ -636,13 +638,14 @@ public class Client {
 
                         receivedString = Util.unmarshallString(serverPayload);
                         System.out.println("Response: \n" + receivedString);
-                        break;
                     } catch (Exception e) {
                         // TODO: handle exception
-                        System.out.println("Callback Client error");
+                        System.out.println("[DEBUG][CALLBACK TIME'S OUT]");
+                    } finally {
+                        // Update the time left for callback
+                        timeToEnd = System.currentTimeMillis() - (t3 + (Long.valueOf(duration) * 1000));
                     }
                 }
-                System.out.println("Response: \n" + receivedString);
                 break;
 
             case 5:
