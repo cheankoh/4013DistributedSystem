@@ -101,7 +101,7 @@ public class Server {
     // TODO: Do this as command line if possible
     boolean atMostOnce = true;
     boolean simulateFail = true;
-    double probFailure = 0.5;
+    double probFailure = 0.0;
 
     // About payload to create a reply message
     byte communicationMethod;
@@ -191,6 +191,7 @@ public class Server {
         System.out.println("Facility Size:" + Facilitylist.size());
         Bookinglist = db.getBookingList();
         String sendString = "";
+        String[] days = { "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday" };
 
         communicationMethod = 2;
         replyType = clientMsgType;
@@ -222,7 +223,6 @@ public class Server {
           List<Integer[][]> Timeslots = FacilityController.queryAvailability(dayOfWeek, facilityTypeId,
               facilitySelection, Facilitylist);
           // List of relevent day:timeslots
-          String[] days = { "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday" };
           if (Timeslots == null) {
             sendString = "invalid day entered";
           } else {
@@ -276,11 +276,21 @@ public class Server {
             List<Integer[][]> callbackAvail = FacilityController.queryAvailability(temp, facilityTypeId,
                 facilitySelection, Facilitylist);
             String callbackString = "";
-            for (Integer[][] slots : callbackAvail) {
-              for (Integer[] slot : slots) {
-                if (slot[0] == 0)
-                  callbackString = callbackString.concat(slot[1] + "\n");
+            if (callbackAvail == null) {
+              callbackString = "invalid day entered";
+            } else {
+              int head = temp.get(0);
+              for (Integer[][] slots : callbackAvail) {
+                callbackString = callbackString.concat(days[head - 1] + "\n");
+                callbackString = callbackString.concat("######################" + "\n");
+                head++;
+                for (Integer[] slot : slots) {
+                  if (slot[0] == 0) {
+                    callbackString = callbackString.concat(slot[1] + "\n");
+                  }
+                }
               }
+
             }
             callbackHandler(cbHistory, facilitySelection, callbackString, server, communicationMethod, replyType,
                 messageID);
@@ -350,8 +360,8 @@ public class Server {
           CallbackHistoryKey savedKey = new CallbackHistoryKey(clientAddress, clientPort);
 
           // Store the client ID (ip&port) and the period of callback
-          long serverTime = System.currentTimeMillis() + Long.valueOf(duration) * 1000;
-          Long t3 = serverTime - Long.valueOf(duration); // Server time when finish processing
+          long serverTime = System.currentTimeMillis() + (Long.valueOf(duration) * 1000);
+          Long t3 = serverTime - (Long.valueOf(duration) * 1000); // Server time when finish processing
           if (cbHistory.containsKey(savedKey)) {
             System.out.println("[INFO][CLIENT HAS REGISTERED BEFORE]");
             if (atMostOnce) { // at most once semantic is used

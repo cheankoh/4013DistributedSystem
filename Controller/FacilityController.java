@@ -40,8 +40,8 @@ public class FacilityController {
             }
 
         }
-   
-        if (dayOfweek.get(1)!=-1 & dayOfWeek.get(1)<dayOfWeek.get(0)){
+
+        if (dayOfWeek.get(1) != -1 & dayOfWeek.get(1) < dayOfWeek.get(0)) {
             return null;
         }
         return ResultAvailability;
@@ -62,16 +62,13 @@ public class FacilityController {
             int[] result = new int[2];
             result[0] = -1;
             result[1] = 0;
-            return result; 
-        }else if (endTime<startTime) { //invalid start/end time
+            return result;
+        } else if (endTime < startTime) { // invalid start/end time
             int[] result = new int[2];
             result[0] = -2;
             result[1] = 0;
             return result;
         }
-
-
-        
 
         // get selected facility in the selected facility type
         Facility targetFacility = filteredFacilityList.get(facilitySelection - 1);
