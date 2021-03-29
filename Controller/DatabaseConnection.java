@@ -162,6 +162,24 @@ public class DatabaseConnection {
         }
     }
 
+    public int updateBookingTiming(Booking booking, int bookingID) {
+        try {
+            PreparedStatement update = conn.prepareStatement("update Booking set timing=? where bookingID=?");
+            // Manually concatenate ArrayList<Integer> as timing string
+            // for simplicity
+            ArrayList<Integer> timing = booking.getTiming();
+            String timingString = String.valueOf(timing.get(0)) + "," + String.valueOf(timing.get(1));
+
+            update.setString(1, timingString);
+            update.setInt(2, bookingID);
+            update.executeUpdate();
+            return bookingID;
+        } catch (Exception e) {
+            // TODO: handle exception
+            return -1;
+        }
+    }
+
     public Integer createBooking(Booking booking) {
         try {
             Statement insert = conn.createStatement();
