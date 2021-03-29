@@ -222,15 +222,25 @@ public class Server {
           List<Integer[][]> Timeslots = FacilityController.queryAvailability(dayOfWeek, facilityTypeId,
               facilitySelection, Facilitylist);
           // List of relevent day:timeslots
-
-          for (Integer[][] slots : Timeslots) {
-            for (Integer[] slot : slots) {
-              if (slot[0] == 0) {
-                sendString = sendString.concat(slot[1] + "\n");
-                System.out.println("here");
+          String[] days = {"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"};
+          if (Timeslots==null){
+            sendString = "invalid day entered";
+          }else{
+            int head = dayOfWeek.get(0);
+            for (Integer[][] slots : Timeslots) {
+              sendString = sendString.concat(days[head-1] + "\n");
+              sendString = sendString.concat("######################" + "\n");
+              head++;
+              for (Integer[] slot : slots) {
+                if (slot[0] == 0) {
+                  sendString = sendString.concat(slot[1] + "\n");
+                }
               }
             }
+
           }
+
+         
           System.out.println("sendString: " + sendString);
           // Create String to send back to user.
           // for (Facility i: filteredFacilityList){
@@ -275,18 +285,27 @@ public class Server {
             }
             callbackHandler(cbHistory, facilitySelection, callbackString, server, communicationMethod, replyType,
                 messageID);
-          } else if (res[0] == 2) {
+          }else if (res[0] == 0) {
             replyType = 0;
-            sendString = "Booking Failed: Wrong ID";
-          } else {
+            sendString = "Failed to create booking";
+          } 
+          else if (res[0] == -1) {
             replyType = 0;
-            sendString = "Booking Failed: Slot not available";
+            sendString = "Booking Failed: Invalid selection for facility";
+          } else if(res[0] == -2){
+            replyType = 0;
+            sendString = "Booking Failed: Invalid start/end time";
+          }
+          else if(res[0] == -3){
+            replyType = 0;
+            sendString = "Booking Failed:Timeslot already booked";
+          }else{
+            replyType = 0;
+            sendString = "Unidentified error";
           }
 
           break;
-        // res = 1 (Booking Succesful)
-        // res = 2 (Booking Failed: Wrong ID)
-        // res = 3 (Booking Failed: Slot not available)
+
 
         case 3:
           bookingId = Util.getBookingID(clientPayload);
@@ -317,9 +336,12 @@ public class Server {
             replyType = 0;
             sendString = "Booking Shift failed: Timeslot already booked";
 
-          } else {
+          } else if(shiftRes[0] == -3){
             replyType = 0;
             sendString = "Booking Shift failed: Invalid offset";
+          }else{
+            replyType = 0;
+            sendString = "Unidentified error";
           }
           break;
         // 3. Change Booking Slot
@@ -373,9 +395,12 @@ public class Server {
               }
             }
             callbackHandler(cbHistory, deleteRes[1], callbackString, server, communicationMethod, replyType, messageID);
-          } else {
+          } else if (deleteRes[0] == -1){
             replyType = 0;
             sendString = "Booking Delete Failed";
+          }else{
+            replyType = 0;
+            sendString = "Unidentified error";
           }
           break;
 
@@ -411,8 +436,11 @@ public class Server {
 
           } else if (extendRes[0] == -3) {
             sendString = "Booking extend/shorten failed: Invalid offset, latest slot reached";
-          } else {
+          } else if (extendRes[0] == -4){
             sendString = "Booking extend/shorten failed: Invalid offset, minimum timeslot length";
+          }else{
+            sendString = "Unidentified error";
+
           }
           break;
 
@@ -459,7 +487,7 @@ public class Server {
       String sendString, Server server, byte communicationMethod, byte replyType, int messageID) {
     if (cbHistoryKey == null)
       return;
-
+    communicationMethod = 3;
     byte[] payload = Util.marshall(sendString);
     int payloadSize = Util.marshall(sendString).length;
     byte[] sendBuffer = Util.getMessageByte(communicationMethod, replyType, messageID, payloadSize, payload);

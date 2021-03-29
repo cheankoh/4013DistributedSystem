@@ -40,7 +40,10 @@ public class FacilityController {
             }
 
         }
-
+   
+        if (dayOfweek.get(1)!=-1 & dayOfWeek.get(1)<dayOfWeek.get(0)){
+            return null;
+        }
         return ResultAvailability;
     }
 
@@ -54,13 +57,21 @@ public class FacilityController {
                 filteredFacilityList.add(i);
             }
         }
-        if (facilitySelection > filteredFacilityList.size()) {
+        if (facilitySelection > filteredFacilityList.size()) {// Invalid selection for facility.
 
             int[] result = new int[2];
             result[0] = -1;
             result[1] = 0;
-            return result; // Invalid selection for facility.
+            return result; 
+        }else if (endTime<startTime) { //invalid start/end time
+            int[] result = new int[2];
+            result[0] = -2;
+            result[1] = 0;
+            return result;
         }
+
+
+        
 
         // get selected facility in the selected facility type
         Facility targetFacility = filteredFacilityList.get(facilitySelection - 1);
@@ -73,7 +84,7 @@ public class FacilityController {
                 System.out.println("Booking failed: Timeslot already booked");
 
                 int[] result = new int[2];
-                result[0] = -2;
+                result[0] = -3;
                 result[1] = 0;
                 return result;
             }
@@ -317,18 +328,12 @@ public class FacilityController {
         conn.updateFacility(facilityData);
         conn.deleteBooking(bookingID);
         // Return success
-        cancelRes[0] = -1;
+        cancelRes[0] = 1;
         cancelRes[1] = facilityID;
         cancelRes[2] = date;
         cancelRes[3] = facilityType;
         return cancelRes;
 
-        // boolean validID = false;
-        // if (!validID)
-        // return -1;
-        // else {
-        // return 0;
-        // }
     }
 
     public static int[] extendBookingSlot(int bookingID, int noOfSlots, ArrayList<Facility> facilityData,
