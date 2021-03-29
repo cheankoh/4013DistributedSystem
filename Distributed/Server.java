@@ -222,13 +222,13 @@ public class Server {
           List<Integer[][]> Timeslots = FacilityController.queryAvailability(dayOfWeek, facilityTypeId,
               facilitySelection, Facilitylist);
           // List of relevent day:timeslots
-          String[] days = {"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"};
-          if (Timeslots==null){
+          String[] days = { "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday" };
+          if (Timeslots == null) {
             sendString = "invalid day entered";
-          }else{
+          } else {
             int head = dayOfWeek.get(0);
             for (Integer[][] slots : Timeslots) {
-              sendString = sendString.concat(days[head-1] + "\n");
+              sendString = sendString.concat(days[head - 1] + "\n");
               sendString = sendString.concat("######################" + "\n");
               head++;
               for (Integer[] slot : slots) {
@@ -240,7 +240,6 @@ public class Server {
 
           }
 
-         
           System.out.println("sendString: " + sendString);
           // Create String to send back to user.
           // for (Facility i: filteredFacilityList){
@@ -285,27 +284,24 @@ public class Server {
             }
             callbackHandler(cbHistory, facilitySelection, callbackString, server, communicationMethod, replyType,
                 messageID);
-          }else if (res[0] == 0) {
+          } else if (res[0] == 0) {
             replyType = 0;
             sendString = "Failed to create booking";
-          } 
-          else if (res[0] == -1) {
+          } else if (res[0] == -1) {
             replyType = 0;
             sendString = "Booking Failed: Invalid selection for facility";
-          } else if(res[0] == -2){
+          } else if (res[0] == -2) {
             replyType = 0;
             sendString = "Booking Failed: Invalid start/end time";
-          }
-          else if(res[0] == -3){
+          } else if (res[0] == -3) {
             replyType = 0;
             sendString = "Booking Failed:Timeslot already booked";
-          }else{
+          } else {
             replyType = 0;
             sendString = "Unidentified error";
           }
 
           break;
-
 
         case 3:
           bookingId = Util.getBookingID(clientPayload);
@@ -336,10 +332,10 @@ public class Server {
             replyType = 0;
             sendString = "Booking Shift failed: Timeslot already booked";
 
-          } else if(shiftRes[0] == -3){
+          } else if (shiftRes[0] == -3) {
             replyType = 0;
             sendString = "Booking Shift failed: Invalid offset";
-          }else{
+          } else {
             replyType = 0;
             sendString = "Unidentified error";
           }
@@ -395,10 +391,10 @@ public class Server {
               }
             }
             callbackHandler(cbHistory, deleteRes[1], callbackString, server, communicationMethod, replyType, messageID);
-          } else if (deleteRes[0] == -1){
+          } else if (deleteRes[0] == -1) {
             replyType = 0;
             sendString = "Booking Delete Failed";
-          }else{
+          } else {
             replyType = 0;
             sendString = "Unidentified error";
           }
@@ -436,9 +432,9 @@ public class Server {
 
           } else if (extendRes[0] == -3) {
             sendString = "Booking extend/shorten failed: Invalid offset, latest slot reached";
-          } else if (extendRes[0] == -4){
+          } else if (extendRes[0] == -4) {
             sendString = "Booking extend/shorten failed: Invalid offset, minimum timeslot length";
-          }else{
+          } else {
             sendString = "Unidentified error";
 
           }
@@ -487,10 +483,11 @@ public class Server {
       String sendString, Server server, byte communicationMethod, byte replyType, int messageID) {
     if (cbHistoryKey == null)
       return;
-    communicationMethod = 3;
+
     byte[] payload = Util.marshall(sendString);
     int payloadSize = Util.marshall(sendString).length;
     byte[] sendBuffer = Util.getMessageByte(communicationMethod, replyType, messageID, payloadSize, payload);
+    ArrayList<CallbackHistoryKey> toRemove = new ArrayList<CallbackHistoryKey>();
     for (HashMap.Entry<CallbackHistoryKey, HashMap<Integer, Long>> callback : cbHistoryKey.entrySet()) {
       if (callback.getValue().containsKey(facilityID)) {
         if (callback.getValue().get(facilityID) > System.currentTimeMillis()) {
@@ -504,9 +501,12 @@ public class Server {
           }
         } else {
           // remove the whole history of that client if the callback is expired
-          cbHistoryKey.remove(callback.getKey());
+          toRemove.add(callback.getKey());
         }
       }
+    }
+    for (CallbackHistoryKey cb : toRemove) {
+      cbHistoryKey.remove(cb);
     }
   }
 }
