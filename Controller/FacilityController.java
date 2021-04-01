@@ -115,11 +115,7 @@ public class FacilityController {
         timing.add(endTime);
         newBooking.setTiming(timing);
         int bookingID = conn.createBooking(newBooking);
-        // ArrayList<Booking> booking = new ArrayList<Booking>();
-        // booking = FileIO.getBookingData();
-        // booking.add(newBooking);
-        // FileIO.storeBookingData(booking);//////// Delete this and call
-        // connection.create(booking)////////
+
         int[] result = new int[2];
         result[0] = (bookingID > 0) ? 1 : 0; // 0 if failure (not likely to happen)
         result[1] = bookingID;
@@ -247,11 +243,7 @@ public class FacilityController {
         shifted_timing.add(endTime + offset);
         newBooking.setTiming(shifted_timing);
         int newBookingID = conn.updateBookingTiming(newBooking, bookingID);
-        // ArrayList<Booking> booking = new ArrayList<Booking>();
-        // booking = FileIO.getBookingData();
-        // booking.add(newBooking);
-        // FileIO.storeBookingData(booking);//////// Delete this and call
-        // connection.create(booking)////////
+    
 
         shiftResult[0] = (newBookingID > 0) ? 1 : 0; // 0 is failure to add
         shiftResult[1] = newBookingID;
@@ -261,8 +253,7 @@ public class FacilityController {
         return shiftResult; // Successfully booked and updated in database
     }
 
-    // public int cancelBooking(int bookingID,ArrayList<Facility>
-    // facilityData,ArrayList<Booking> bookingData, Connection connection) {
+
     public static int[] cancelBooking(int bookingID, ArrayList<Facility> facilityData, DatabaseConnection conn) {
 
         Booking result = conn.queryBooking(bookingID); // result ==deleted booking
@@ -279,9 +270,8 @@ public class FacilityController {
 
         // Get getFacilityID, getDate(dayofWeek), getTiming(startTime,endTime) of
         // booking
-        // int userID = result.getUserID();
+     
         int facilityID = result.getFacilityID();
-        // int _bookingID = result.getBookingID();
         int date = result.getDate();
         ArrayList<Integer> timing = result.getTiming();
         int startTime = timing.get(0);
@@ -320,7 +310,6 @@ public class FacilityController {
                 i = targetFacility;
             }
         }
-        // FileIO.storeFacilityData(facilityData); // update facility.txt
         conn.updateFacility(facilityData);
         conn.deleteBooking(bookingID);
         // Return success
@@ -352,7 +341,6 @@ public class FacilityController {
         // Get getFacilityID, getDate(dayofWeek), getTiming(startTime,endTime) of
         // booking
         int userID = result.getUserID();
-        // int _bookingID = result.getBookingID();
         int facilityID = result.getFacilityID();
         int date = result.getDate();
         ArrayList<Integer> timing = result.getTiming();
@@ -435,9 +423,7 @@ public class FacilityController {
                 i = targetFacility;
             }
         }
-        // FileIO.storeFacilityData(facilityData); // update facility.txt
         conn.updateFacility(facilityData);
-        // conn.deleteBooking(bookingID);
 
         // Create a new Booking object and save to database
         Booking newBooking = new Booking();
@@ -451,11 +437,7 @@ public class FacilityController {
         shifted_timing.add(endTime + noOfSlots); // take note
         newBooking.setTiming(shifted_timing);
         int newBookingID = conn.updateBookingTiming(newBooking, bookingID);
-        // ArrayList<Booking> booking = new ArrayList<Booking>();
-        // booking = FileIO.getBookingData();
-        // booking.add(newBooking);
-        // FileIO.storeBookingData(booking);//////// Delete this and call
-        // connection.create(booking)////////
+    
 
         shiftResult[0] = (newBookingID > 0) ? 1 : 0; // 0 is failure to add
         shiftResult[1] = newBookingID;
