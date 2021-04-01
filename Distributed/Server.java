@@ -186,9 +186,9 @@ public class Server {
         int bookingId;
         int offset;
         int noOfSlots;
-        Facilitylist = db.getFacilityList(); //Get facility list from database
+        Facilitylist = db.getFacilityList(); // Get facility list from database
         System.out.println("Facility Size:" + Facilitylist.size());
-        Bookinglist = db.getBookingList(); //Get booking list from database
+        Bookinglist = db.getBookingList(); // Get booking list from database
         String sendString = "";
         String[] days = { "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday" };
 
@@ -240,7 +240,7 @@ public class Server {
           }
 
           System.out.println("sendString: " + sendString);
-       
+
           break;
 
         case 2: // 2. Book Facility.
@@ -361,6 +361,7 @@ public class Server {
           long serverTime = System.currentTimeMillis() + (Long.valueOf(duration) * 1000);
           Long t3 = serverTime - (Long.valueOf(duration) * 1000); // Server time when finish processing
           System.out.println();
+          // Checking for duplicate request
           if (cbHistory.containsKey(savedKey)) {
             System.out.println("[INFO][CLIENT HAS REGISTERED BEFORE]");
             if (atMostOnce) { // at most once semantic is used
@@ -374,7 +375,7 @@ public class Server {
               cbHistory.get(savedKey).put(facilityID, serverTime);
               System.out.println("[INFO][ATLEASTONCE IS USED THUS RETURNING NEW SERVER TIME]");
             }
-          } else {
+          } else { // Not a duplicate request
             cbHistory.put(savedKey, (new HashMap<Integer, Long>()));
             cbHistory.get(savedKey).put(facilityID, serverTime);
             System.out.println("[DEBUG][INSERTED NEW IP, PORT FOR CALLBACK]");
@@ -492,25 +493,31 @@ public class Server {
 
   }
 
-  
   public static void callbackHandler(HashMap<CallbackHistoryKey, HashMap<Integer, Long>> cbHistoryKey, int facilityID,
       String sendString, Server server, byte communicationMethod, byte replyType, int messageID) {
     if (cbHistoryKey == null)
       return;
-
+    // marshall callback message to be sent to the registered client
     byte[] payload = Util.marshall(sendString);
     int payloadSize = Util.marshall(sendString).length;
+
+    // Create new UDP packet with data to send to the client
     byte[] sendBuffer = Util.getMessageByte(communicationMethod, replyType, messageID, payloadSize, payload);
     ArrayList<CallbackHistoryKey> toRemove = new ArrayList<CallbackHistoryKey>();
     System.out.println("[DEBUG][ENTERED CALLBACK FUNCTION]");
+
+    // Iterate through every registered callback to check if the updated facility
+    // is the one that the client registered callback for
     for (HashMap.Entry<CallbackHistoryKey, HashMap<Integer, Long>> callback : cbHistoryKey.entrySet()) {
+      // if the client has registered callback for the updated facility
       if (callback.getValue().containsKey(facilityID)) {
-        System.out.println("EXPIRY TIME: " + callback.getValue().get(facilityID));
-        System.out.println("CURRENT TIME: " + System.currentTimeMillis());
+        // System.out.println("EXPIRY TIME: " + callback.getValue().get(facilityID));
+        // System.out.println("CURRENT TIME: " + System.currentTimeMillis());
         boolean notClientExpired = callback.getValue().get(facilityID) > System.currentTimeMillis();
         System.out.println("[DEBUG][CLIENT NOT EXPIRED: " + notClientExpired + "]");
         if (notClientExpired) {
           try {
+            // To send the message string to client
             server.send(sendBuffer, callback.getKey().getIPAddress(), callback.getKey().getPort());
             System.out.println("[DEBUG][SERVER HAS SENT CALLBACK MESSAGE TO CLIENT]");
           } catch (Exception e) {
@@ -519,12 +526,13 @@ public class Server {
             e.printStackTrace();
           }
         } else {
-          // remove the whole history of that client if the callback is expired
+          // To remove the whole history of that client if the callback is expired
           System.out.println("[DEBUG][DELETING PARTICULAR USER]");
           toRemove.add(callback.getKey());
         }
       }
     }
+    // Actual implementation to remove the expired clients
     for (CallbackHistoryKey cb : toRemove) {
       cbHistoryKey.remove(cb);
     }
