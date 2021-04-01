@@ -34,13 +34,13 @@ Client handles the input from user and packets them before sending to server as 
 
 Server handles the bulk of application logic for the application. Here the server implements the logic to unpack data transmitted to by client, calling the services, executing the services, producing the outputs and packets them to a message format before sending back to the client. Codebase for server is found in Distributed/Server.java
 
-The marshalling/unmarshalling logics for converting from application level to physical level for transmission and receival is documented in Distributed/Util.java. The rest of the application, such as entity modelling and application controlling logics are fond in Model and Controller packets accordingly.
+The marshalling/unmarshalling logics for converting from application level to physical level for transmission and receival is documented in Distributed/Util.java. The rest of the application, such as entity modelling and application controlling logics are found in Model and Controller packets accordingly.
 
 ---
 ## Distributed Infrastructure
-Data bandwidth available for transmission is assumed to be unlimited for the ease of implementing receiving buffer allocation. This allows a single fixed size UDP message to be sent at any point in time instead of an auxilary header UDP storing the size of the incoming message. Such auxilary message is easily proned to failure and pose as a difficulty in handling due to complexity.
+Data bandwidth available for transmission is assumed to be unlimited for the ease of implementing receiving buffer allocation. This allows a single fixed size UDP message to be sent at any point in time instead of an auxiliary header UDP storing the size of the incoming messages. Such auxiliary message is easily prone to failure and posed as a difficulty in handling due to the complexity.
 
-The application message is assumed to be fixed size of 1024 B with 5 common fields: Communication Methods, Message Type, Message ID, Payload Size and Payload.
+The application message is assumed to be fixed size of 1024 Bytes with 5 common fields: Communication Methods, Message Type, Message ID, Payload Size and Payload.
 
 ```
 --------------------------------------------------------------------------------------------
