@@ -24,7 +24,7 @@ public class CallbackHistoryKey {
     public boolean equals(Object o) {
         if (this == o)
             return true;
-        if (!(o instanceof HistoryKey))
+        if (!(o instanceof CallbackHistoryKey))
             return false;
         CallbackHistoryKey key = (CallbackHistoryKey) o;
         return port == key.port && IPAddress.equals(key.IPAddress);

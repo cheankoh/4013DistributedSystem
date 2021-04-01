@@ -99,9 +99,9 @@ public class Server {
 
   public static void main(String[] args) throws IOException {
     // TODO: Do this as command line if possible
-    boolean atMostOnce = true;
+    boolean atMostOnce = false;
     boolean simulateFail = true;
-    double probFailure = 0.0;
+    double probFailure = 0.5;
 
     // About payload to create a reply message
     byte communicationMethod;
@@ -286,14 +286,15 @@ public class Server {
                 head++;
                 for (Integer[] slot : slots) {
                   if (slot[0] == 0) {
+                    System.out.println("SLOT[0]" + slot[0]);
                     callbackString = callbackString.concat(slot[1] + "\n");
                   }
                 }
               }
 
             }
-            callbackHandler(cbHistory, facilitySelection, callbackString, server, communicationMethod, replyType,
-                messageID);
+            callbackHandler(cbHistory, facilitySelection + (2 * (facilityTypeId - 1)), callbackString, server,
+                communicationMethod, replyType, messageID);
           } else if (res[0] == 0) {
             replyType = 0;
             sendString = "Failed to create booking";
@@ -354,7 +355,8 @@ public class Server {
 
         case 4:
           // 4. Monitor Facility Availibility
-          int facilityID = Util.getFacilityNum(clientPayload);
+          int typeID = Util.getFacilityType(clientPayload);
+          int facilityID = Util.getFacilityNum(clientPayload) + (2 * (typeID - 1));
           int duration = Util.getDuration(clientPayload);
           System.out.println("[DEBUG][INSERTING INTO CALLBACK]");
           CallbackHistoryKey savedKey = new CallbackHistoryKey(clientAddress, clientPort);
@@ -362,19 +364,24 @@ public class Server {
           // Store the client ID (ip&port) and the period of callback
           long serverTime = System.currentTimeMillis() + (Long.valueOf(duration) * 1000);
           Long t3 = serverTime - (Long.valueOf(duration) * 1000); // Server time when finish processing
+          System.out.println();
           if (cbHistory.containsKey(savedKey)) {
             System.out.println("[INFO][CLIENT HAS REGISTERED BEFORE]");
             if (atMostOnce) { // at most once semantic is used
               t3 = cbHistory.get(savedKey).get(facilityID) - Long.valueOf(duration) * 1000;
               System.out.println("[INFO][ATMOSTONCE IS USED THUS RETURNING STORED SERVER TIME]");
             } else { // at least once semantic is used
+              cbHistory.remove(savedKey);
+
+              System.out.println("[DEBUG][SavedKey EXISTS : " + cbHistory.containsKey(savedKey) + "]");
+              cbHistory.put(savedKey, (new HashMap<Integer, Long>()));
               cbHistory.get(savedKey).put(facilityID, serverTime);
               System.out.println("[INFO][ATLEASTONCE IS USED THUS RETURNING NEW SERVER TIME]");
             }
           } else {
             cbHistory.put(savedKey, (new HashMap<Integer, Long>()));
             cbHistory.get(savedKey).put(facilityID, serverTime);
-            System.out.println("[DEBUG][INSERTED NEW IP, PORT AND REQUEST ID FOR CALLBACK]");
+            System.out.println("[DEBUG][INSERTED NEW IP, PORT FOR CALLBACK]");
           }
 
           sendString = t3.toString();
@@ -469,11 +476,11 @@ public class Server {
           System.out.println("[DEBUG][INSERTING INTO HISTORY]");
           HistoryKey savedKey = new HistoryKey(clientAddress.toString(), clientPort);
           if (historyMap.containsKey(savedKey)) {
-            historyMap.get(savedKey).put(messageID, sendBuffer);
+            historyMap.get(savedKey).put(clientMsgID, sendBuffer);
             System.out.println("[DEBUG][INSERTED NEW REQUEST ID]");
           } else {
             historyMap.put(savedKey, (new HashMap<Integer, byte[]>()));
-            historyMap.get(savedKey).put(messageID, sendBuffer);
+            historyMap.get(savedKey).put(clientMsgID, sendBuffer);
             System.out.println("[DEBUG][INSERTED NEW IP, PORT AND REQUEST ID]");
           }
         }
@@ -498,9 +505,14 @@ public class Server {
     int payloadSize = Util.marshall(sendString).length;
     byte[] sendBuffer = Util.getMessageByte(communicationMethod, replyType, messageID, payloadSize, payload);
     ArrayList<CallbackHistoryKey> toRemove = new ArrayList<CallbackHistoryKey>();
+    System.out.println("[DEBUG][ENTERED CALLBACK FUNCTION]");
     for (HashMap.Entry<CallbackHistoryKey, HashMap<Integer, Long>> callback : cbHistoryKey.entrySet()) {
       if (callback.getValue().containsKey(facilityID)) {
-        if (callback.getValue().get(facilityID) > System.currentTimeMillis()) {
+        System.out.println("EXPIRY TIME: " + callback.getValue().get(facilityID));
+        System.out.println("CURRENT TIME: " + System.currentTimeMillis());
+        boolean notClientExpired = callback.getValue().get(facilityID) > System.currentTimeMillis();
+        System.out.println("[DEBUG][CLIENT NOT EXPIRED: " + notClientExpired + "]");
+        if (notClientExpired) {
           try {
             server.send(sendBuffer, callback.getKey().getIPAddress(), callback.getKey().getPort());
             System.out.println("[DEBUG][SERVER HAS SENT CALLBACK MESSAGE TO CLIENT]");
@@ -511,6 +523,7 @@ public class Server {
           }
         } else {
           // remove the whole history of that client if the callback is expired
+          System.out.println("[DEBUG][DELETING PARTICULAR USER]");
           toRemove.add(callback.getKey());
         }
       }

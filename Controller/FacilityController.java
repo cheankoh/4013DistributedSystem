@@ -143,7 +143,6 @@ public class FacilityController {
             shiftResult[2] = 0;
             shiftResult[3] = 0;
             shiftResult[4] = 0;
-            System.out.println("oh oh");
             return shiftResult;
 
         }
@@ -235,7 +234,7 @@ public class FacilityController {
         }
         // FileIO.storeFacilityData(facilityData); // update facility.txt
         conn.updateFacility(facilityData);
-        conn.deleteBooking(bookingID);
+        // conn.deleteBooking(bookingID)
         // Create a Booking object and save to database
         Booking newBooking = new Booking();
         newBooking.setUserID(userID);
@@ -247,7 +246,7 @@ public class FacilityController {
         shifted_timing.add(startTime + offset);
         shifted_timing.add(endTime + offset);
         newBooking.setTiming(shifted_timing);
-        int newBookingID = conn.createBooking(newBooking);
+        int newBookingID = conn.updateBookingTiming(newBooking, bookingID);
         // ArrayList<Booking> booking = new ArrayList<Booking>();
         // booking = FileIO.getBookingData();
         // booking.add(newBooking);
@@ -256,7 +255,7 @@ public class FacilityController {
 
         shiftResult[0] = (newBookingID > 0) ? 1 : 0; // 0 is failure to add
         shiftResult[1] = newBookingID;
-        shiftResult[2] = facilityID;
+        shiftResult[2] = facilityID; //
         shiftResult[3] = date;
         shiftResult[4] = facilityType;
         return shiftResult; // Successfully booked and updated in database
@@ -438,7 +437,7 @@ public class FacilityController {
         }
         // FileIO.storeFacilityData(facilityData); // update facility.txt
         conn.updateFacility(facilityData);
-        conn.deleteBooking(bookingID);
+        // conn.deleteBooking(bookingID);
 
         // Create a new Booking object and save to database
         Booking newBooking = new Booking();
@@ -451,7 +450,7 @@ public class FacilityController {
         shifted_timing.add(startTime);
         shifted_timing.add(endTime + noOfSlots); // take note
         newBooking.setTiming(shifted_timing);
-        int newBookingID = conn.createBooking(newBooking);
+        int newBookingID = conn.updateBookingTiming(newBooking, bookingID);
         // ArrayList<Booking> booking = new ArrayList<Booking>();
         // booking = FileIO.getBookingData();
         // booking.add(newBooking);
