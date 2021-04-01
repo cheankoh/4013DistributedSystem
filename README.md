@@ -18,12 +18,12 @@ javac Distributed/Client.java
 ```
 Launch the server first
 ```
-java Distributed/Server SEMANTIC_MODE FAILURE_THRESHOLD
+java Distributed/Server
 ```
 
 Launch the client then
 ```
-java Distributed/Client IP_SERVER PORT_SERVER FAILURE THRESHOLD TIMEOUT
+java Distributed/Client
 ```
 
 ---
