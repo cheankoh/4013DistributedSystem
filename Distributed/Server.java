@@ -186,9 +186,9 @@ public class Server {
         int bookingId;
         int offset;
         int noOfSlots;
-        Facilitylist = db.getFacilityList();
+        Facilitylist = db.getFacilityList(); //Get facility list from database
         System.out.println("Facility Size:" + Facilitylist.size());
-        Bookinglist = db.getBookingList();
+        Bookinglist = db.getBookingList(); //Get booking list from database
         String sendString = "";
         String[] days = { "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday" };
 
@@ -240,13 +240,10 @@ public class Server {
           }
 
           System.out.println("sendString: " + sendString);
-          // Create String to send back to user.
-          // for (Facility i: filteredFacilityList){
-          // sendString = sendString.concat(i.getFacilityName()+ "\n");
-          // }
+       
           break;
 
-        case 2:
+        case 2: // 2. Book Facility.
           facilityTypeId = Util.getFacilityType(clientPayload);
           facilitySelection = Util.getFacilityNum(clientPayload);
           dayofWeek = Util.getDayOfWeek(clientPayload);
@@ -313,7 +310,7 @@ public class Server {
 
           break;
 
-        case 3:
+        case 3: // 3. Change Facility Booking Slot.
           bookingId = Util.getBookingID(clientPayload);
           offset = Util.getOffset(clientPayload);
           int[] shiftRes = FacilityController.shiftBookingSlot(bookingId, offset, Facilitylist, db);
@@ -495,6 +492,7 @@ public class Server {
 
   }
 
+  
   public static void callbackHandler(HashMap<CallbackHistoryKey, HashMap<Integer, Long>> cbHistoryKey, int facilityID,
       String sendString, Server server, byte communicationMethod, byte replyType, int messageID) {
     if (cbHistoryKey == null)

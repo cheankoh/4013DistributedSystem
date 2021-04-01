@@ -8,7 +8,7 @@ import java.util.Arrays;
 
 public class DatabaseConnection {
     public static Connection conn;
-
+    //To initiate database connection
     public DatabaseConnection() {
         try {
             conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/4013_distributed_system", "root",
@@ -20,6 +20,7 @@ public class DatabaseConnection {
         }
     }
 
+    //Query for all facility in database
     public ArrayList<Facility> getFacilityList() {
         try {
             Statement getFacility = conn.createStatement();
@@ -72,6 +73,7 @@ public class DatabaseConnection {
 
     }
 
+    //Query for all bookings in database
     public ArrayList<Booking> getBookingList() {
         try {
             Statement getBooking = conn.createStatement();
@@ -103,6 +105,7 @@ public class DatabaseConnection {
         }
     }
 
+    //Update facility in database
     public Boolean updateFacility(ArrayList<Facility> facilities) {
         try {
             for (Facility facility : facilities) {
@@ -136,6 +139,7 @@ public class DatabaseConnection {
         }
     }
 
+    //Update Booking in facility
     public Boolean updateBooking(ArrayList<Booking> bookings) {
         try {
             for (Booking booking : bookings) {
@@ -162,6 +166,7 @@ public class DatabaseConnection {
         }
     }
 
+    //Update Booking timing in database
     public int updateBookingTiming(Booking booking, int bookingID) {
         try {
             PreparedStatement update = conn.prepareStatement("update Booking set timing=? where bookingID=?");
@@ -180,6 +185,7 @@ public class DatabaseConnection {
         }
     }
 
+    //Create a booking object in database
     public Integer createBooking(Booking booking) {
         try {
             Statement insert = conn.createStatement();
@@ -212,7 +218,7 @@ public class DatabaseConnection {
             return -1;
         }
     }
-
+    //Query a booking object in database
     public Booking queryBooking(int bookingID) {
         try {
             Statement getFacility = conn.createStatement();
@@ -244,6 +250,7 @@ public class DatabaseConnection {
         }
     }
 
+    //Delete a booking object in database
     public Boolean deleteBooking(int bookingID) {
         try {
             PreparedStatement update = conn.prepareStatement("Delete from Booking where bookingID=?");

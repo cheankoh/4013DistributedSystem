@@ -11,9 +11,8 @@ import java.io.IOException;
 import java.lang.reflect.Array;
 import java.util.List;
 
+//Create data for testing. Not for actual application.
 class DataFactory{
-
-
     public static void main(String[] args) {
     Integer timeslot[][] = {{0,800},{0,830},{0,900},{0,930},{0,1000},{0,1030},{0,1100},{0,1130},{0,1200},{0,1230},{0,1300},{0,1330},{0,1400},{0,1430},{0,1500},{0,1530},{0,1600},{0,1630},{0,1700}};
 

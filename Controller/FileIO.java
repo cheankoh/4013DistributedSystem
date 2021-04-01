@@ -8,7 +8,7 @@ import java.io.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 
-
+//For testing purposes. Not for actual application.
 public class FileIO {
 
    public static ObjectOutputStream getObjectOutputStream(String fileName) {
