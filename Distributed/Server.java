@@ -444,7 +444,7 @@ public class Server {
             temp.add(deleteRes[2]);
             temp.add(-1);
             List<Integer[][]> callbackAvail = FacilityController.queryAvailability(temp, deleteRes[3],
-                deleteRes[1] - (2 * (deleteRes[3]) - 1), Facilitylist);
+                deleteRes[1] - (2 * (deleteRes[3] - 1)), Facilitylist);
             String callbackString = "";
             if (callbackAvail == null) {
               callbackString = "invalid day entered";
