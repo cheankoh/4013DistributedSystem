@@ -11,6 +11,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
+import java.util.Scanner;
 
 import java.io.*;
 
@@ -102,6 +103,40 @@ public class Server {
     boolean simulateFail = true;
     double probFailure = 0.5;
 
+    // Asking for inputs for semantics, and simulate bit (true/false)
+    Scanner sc = new Scanner(System.in);
+    System.out.println("====================================");
+    System.out.println("Selecting semantic for server...");
+    System.out.println("1. AT LEAST ONCE");
+    System.out.println("2. AT MOST ONCE");
+    int semantics = sc.nextInt();
+    switch (semantics) {
+    case 1:
+      atMostOnce = false;
+      break;
+    case 2:
+      atMostOnce = true;
+      break;
+
+    default:
+      break;
+    }
+    System.out.println("====================================");
+    System.out.println("Simulate dropping of message on server...");
+    System.out.println("1. YES");
+    System.out.println("2. NO");
+    int simulate = sc.nextInt();
+    switch (simulate) {
+    case 1:
+      simulateFail = true;
+      break;
+    case 2:
+      simulateFail = false;
+      break;
+    default:
+      break;
+    }
+    sc.close();
     // About payload to create a reply message
     byte communicationMethod;
     byte replyType;
@@ -186,9 +221,9 @@ public class Server {
         int bookingId;
         int offset;
         int noOfSlots;
-        Facilitylist = db.getFacilityList(); //Get facility list from database
-        System.out.println("Facility Size:" + Facilitylist.size());
-        Bookinglist = db.getBookingList(); //Get booking list from database
+        Facilitylist = db.getFacilityList(); // Get facility list from database
+
+        Bookinglist = db.getBookingList(); // Get booking list from database
         String sendString = "";
         String[] days = { "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday" };
 
@@ -207,7 +242,7 @@ public class Server {
           String date = Util.getDate(clientPayload, clientPayloadSize);
           numDaysHead = date.charAt(0) - 48;
           dayOfWeek.add(numDaysHead);
-          System.out.println(numDaysHead);
+          // System.out.println(numDaysHead);
           try {
             numDaysTail = date.charAt(1) - 48;
           } catch (Exception e) {
@@ -215,7 +250,7 @@ public class Server {
             numDaysTail = -1;
           }
           dayOfWeek.add(numDaysTail);
-          System.out.println(numDaysTail);
+          // System.out.println(numDaysTail);
 
           // facilitySelection = 1 :First facility in the respective facility type
 
@@ -225,10 +260,10 @@ public class Server {
           if (Timeslots == null) {
             sendString = "invalid day entered";
           } else {
-            sendString = sendString.concat("Time displayed is start time of the 30 minute slot"+"\n");
+            sendString = sendString.concat("Time displayed is start time of the 30 minute slot" + "\n");
             int head = dayOfWeek.get(0);
             for (Integer[][] slots : Timeslots) {
-              sendString = sendString.concat("#########"+days[head - 1] + "#########"+"\n");
+              sendString = sendString.concat("#########" + days[head - 1] + "#########" + "\n");
               sendString = sendString.concat("######################" + "\n");
               head++;
               for (Integer[] slot : slots) {
@@ -240,8 +275,8 @@ public class Server {
 
           }
 
-          System.out.println("sendString: " + sendString);
-       
+          // System.out.println("sendString: " + sendString);
+
           break;
 
         case 2: // 2. Book Facility.
@@ -261,12 +296,13 @@ public class Server {
 
           int[] res = FacilityController.bookFacility(Facilitylist, facilityTypeId, facilitySelection, dayofWeek,
               startTime, endTime, userID, db);
-          System.out.println("res: " + res);
+          // System.out.println("res: " + res);
 
           if (res[0] == 1) {
             int id = res[1];
             sendString = "Booking Successful.\n Booking ID: " + id
                 + ". Please remember your BookingID to update/delete";
+
             List<Integer> temp = new ArrayList<Integer>();
             temp.add(dayofWeek);
             temp.add(-1);
@@ -283,12 +319,11 @@ public class Server {
                 head++;
                 for (Integer[] slot : slots) {
                   if (slot[0] == 0) {
-                    System.out.println("SLOT[0]" + slot[0]);
+                    // System.out.println("SLOT[0]" + slot[0]);
                     callbackString = callbackString.concat(slot[1] + "\n");
                   }
                 }
               }
-
             }
             callbackHandler(cbHistory, facilitySelection + (2 * (facilityTypeId - 1)), callbackString, server,
                 communicationMethod, replyType, messageID);
@@ -324,13 +359,25 @@ public class Server {
             temp.add(-1);
             List<Integer[][]> callbackAvail = FacilityController.queryAvailability(temp, shiftRes[4],
                 shiftRes[2] - (2 * (shiftRes[4]) - 1), Facilitylist);
+
             String callbackString = "";
-            for (Integer[][] slots : callbackAvail) {
-              for (Integer[] slot : slots) {
-                if (slot[0] == 0)
-                  callbackString = callbackString.concat(slot[1] + "\n");
+            if (callbackAvail == null) {
+              callbackString = "invalid day entered";
+            } else {
+              int head = temp.get(0);
+              for (Integer[][] slots : callbackAvail) {
+                callbackString = callbackString.concat(days[head - 1] + "\n");
+                callbackString = callbackString.concat("######################" + "\n");
+                head++;
+                for (Integer[] slot : slots) {
+                  if (slot[0] == 0) {
+                    // System.out.println("SLOT[0]" + slot[0]);
+                    callbackString = callbackString.concat(slot[1] + "\n");
+                  }
+                }
               }
             }
+
             callbackHandler(cbHistory, shiftRes[2], callbackString, server, communicationMethod, replyType, messageID);
           } else if (shiftRes[0] == -1) {
             replyType = 0;
@@ -370,7 +417,8 @@ public class Server {
             } else { // at least once semantic is used
               cbHistory.remove(savedKey);
 
-              System.out.println("[DEBUG][SavedKey EXISTS : " + cbHistory.containsKey(savedKey) + "]");
+              // System.out.println("[DEBUG][SavedKey EXISTS : " +
+              // cbHistory.containsKey(savedKey) + "]");
               cbHistory.put(savedKey, (new HashMap<Integer, Long>()));
               cbHistory.get(savedKey).put(facilityID, serverTime);
               System.out.println("[INFO][ATLEASTONCE IS USED THUS RETURNING NEW SERVER TIME]");
@@ -398,10 +446,20 @@ public class Server {
             List<Integer[][]> callbackAvail = FacilityController.queryAvailability(temp, deleteRes[3],
                 deleteRes[1] - (2 * (deleteRes[3]) - 1), Facilitylist);
             String callbackString = "";
-            for (Integer[][] slots : callbackAvail) {
-              for (Integer[] slot : slots) {
-                if (slot[0] == 0)
-                  callbackString = callbackString.concat(slot[1] + "\n");
+            if (callbackAvail == null) {
+              callbackString = "invalid day entered";
+            } else {
+              int head = temp.get(0);
+              for (Integer[][] slots : callbackAvail) {
+                callbackString = callbackString.concat(days[head - 1] + "\n");
+                callbackString = callbackString.concat("######################" + "\n");
+                head++;
+                for (Integer[] slot : slots) {
+                  if (slot[0] == 0) {
+                    // System.out.println("SLOT[0]" + slot[0]);
+                    callbackString = callbackString.concat(slot[1] + "\n");
+                  }
+                }
               }
             }
             callbackHandler(cbHistory, deleteRes[1], callbackString, server, communicationMethod, replyType, messageID);
@@ -429,10 +487,20 @@ public class Server {
             List<Integer[][]> callbackAvail = FacilityController.queryAvailability(temp, extendRes[4],
                 extendRes[2] - (2 * (extendRes[4] - 1)), Facilitylist);
             String callbackString = "";
-            for (Integer[][] slots : callbackAvail) {
-              for (Integer[] slot : slots) {
-                if (slot[0] == 0)
-                  callbackString = callbackString.concat(slot[1] + "\n");
+            if (callbackAvail == null) {
+              callbackString = "invalid day entered";
+            } else {
+              int head = temp.get(0);
+              for (Integer[][] slots : callbackAvail) {
+                callbackString = callbackString.concat(days[head - 1] + "\n");
+                callbackString = callbackString.concat("######################" + "\n");
+                head++;
+                for (Integer[] slot : slots) {
+                  if (slot[0] == 0) {
+                    // System.out.println("SLOT[0]" + slot[0]);
+                    callbackString = callbackString.concat(slot[1] + "\n");
+                  }
+                }
               }
             }
             callbackHandler(cbHistory, extendRes[2], callbackString, server, communicationMethod, replyType, messageID);
@@ -493,7 +561,6 @@ public class Server {
 
   }
 
-  
   public static void callbackHandler(HashMap<CallbackHistoryKey, HashMap<Integer, Long>> cbHistoryKey, int facilityID,
       String sendString, Server server, byte communicationMethod, byte replyType, int messageID) {
     if (cbHistoryKey == null)
@@ -503,11 +570,11 @@ public class Server {
     int payloadSize = Util.marshall(sendString).length;
     byte[] sendBuffer = Util.getMessageByte(communicationMethod, replyType, messageID, payloadSize, payload);
     ArrayList<CallbackHistoryKey> toRemove = new ArrayList<CallbackHistoryKey>();
-    System.out.println("[DEBUG][ENTERED CALLBACK FUNCTION]");
+    // System.out.println("[DEBUG][ENTERED CALLBACK FUNCTION]");
     for (HashMap.Entry<CallbackHistoryKey, HashMap<Integer, Long>> callback : cbHistoryKey.entrySet()) {
       if (callback.getValue().containsKey(facilityID)) {
-        System.out.println("EXPIRY TIME: " + callback.getValue().get(facilityID));
-        System.out.println("CURRENT TIME: " + System.currentTimeMillis());
+        // System.out.println("EXPIRY TIME: " + callback.getValue().get(facilityID));
+        // System.out.println("CURRENT TIME: " + System.currentTimeMillis());
         boolean notClientExpired = callback.getValue().get(facilityID) > System.currentTimeMillis();
         System.out.println("[DEBUG][CLIENT NOT EXPIRED: " + notClientExpired + "]");
         if (notClientExpired) {
