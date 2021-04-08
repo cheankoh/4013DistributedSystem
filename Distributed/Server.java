@@ -263,8 +263,7 @@ public class Server {
             sendString = sendString.concat("Time displayed is start time of the 30 minute slot" + "\n");
             int head = dayOfWeek.get(0);
             for (Integer[][] slots : Timeslots) {
-              sendString = sendString.concat("#########" + days[head - 1] + "#########" + "\n");
-              sendString = sendString.concat("######################" + "\n");
+              sendString = sendString.concat(days[head - 1] + "\n");
               head++;
               for (Integer[] slot : slots) {
                 if (slot[0] == 0) {
@@ -315,7 +314,6 @@ public class Server {
               int head = temp.get(0);
               for (Integer[][] slots : callbackAvail) {
                 callbackString = callbackString.concat(days[head - 1] + "\n");
-                callbackString = callbackString.concat("######################" + "\n");
                 head++;
                 for (Integer[] slot : slots) {
                   if (slot[0] == 0) {
@@ -358,7 +356,7 @@ public class Server {
             temp.add(shiftRes[3]);
             temp.add(-1);
             List<Integer[][]> callbackAvail = FacilityController.queryAvailability(temp, shiftRes[4],
-                shiftRes[2] - (2 * (shiftRes[4]) - 1), Facilitylist);
+                shiftRes[2] - (2 * (shiftRes[4] - 1)), Facilitylist);
 
             String callbackString = "";
             if (callbackAvail == null) {
@@ -367,7 +365,6 @@ public class Server {
               int head = temp.get(0);
               for (Integer[][] slots : callbackAvail) {
                 callbackString = callbackString.concat(days[head - 1] + "\n");
-                callbackString = callbackString.concat("######################" + "\n");
                 head++;
                 for (Integer[] slot : slots) {
                   if (slot[0] == 0) {
@@ -452,7 +449,6 @@ public class Server {
               int head = temp.get(0);
               for (Integer[][] slots : callbackAvail) {
                 callbackString = callbackString.concat(days[head - 1] + "\n");
-                callbackString = callbackString.concat("######################" + "\n");
                 head++;
                 for (Integer[] slot : slots) {
                   if (slot[0] == 0) {
@@ -493,7 +489,6 @@ public class Server {
               int head = temp.get(0);
               for (Integer[][] slots : callbackAvail) {
                 callbackString = callbackString.concat(days[head - 1] + "\n");
-                callbackString = callbackString.concat("######################" + "\n");
                 head++;
                 for (Integer[] slot : slots) {
                   if (slot[0] == 0) {

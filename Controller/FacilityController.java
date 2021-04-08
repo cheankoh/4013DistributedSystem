@@ -3,6 +3,9 @@ package Controller;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+
+import com.mysql.cj.xdevapi.Result;
+
 import Model.Facility;
 import Model.Booking;
 
@@ -36,7 +39,6 @@ public class FacilityController {
             for (int i = dayOfWeek.get(0); i <= dayOfWeek.get(1); i++) {
                 Integer[][] timeslot = availability.get(i);
                 ResultAvailability.add(timeslot);
-
             }
 
         }
@@ -44,6 +46,7 @@ public class FacilityController {
         if (dayOfWeek.get(1) != -1 & dayOfWeek.get(1) < dayOfWeek.get(0)) {
             return null;
         }
+        ResultAvailability.remove(ResultAvailability.size() - 1);
         return ResultAvailability;
     }
 
@@ -243,7 +246,6 @@ public class FacilityController {
         shifted_timing.add(endTime + offset);
         newBooking.setTiming(shifted_timing);
         int newBookingID = conn.updateBookingTiming(newBooking, bookingID);
-    
 
         shiftResult[0] = (newBookingID > 0) ? 1 : 0; // 0 is failure to add
         shiftResult[1] = newBookingID;
@@ -252,7 +254,6 @@ public class FacilityController {
         shiftResult[4] = facilityType;
         return shiftResult; // Successfully booked and updated in database
     }
-
 
     public static int[] cancelBooking(int bookingID, ArrayList<Facility> facilityData, DatabaseConnection conn) {
 
@@ -270,7 +271,7 @@ public class FacilityController {
 
         // Get getFacilityID, getDate(dayofWeek), getTiming(startTime,endTime) of
         // booking
-     
+
         int facilityID = result.getFacilityID();
         int date = result.getDate();
         ArrayList<Integer> timing = result.getTiming();
@@ -437,7 +438,6 @@ public class FacilityController {
         shifted_timing.add(endTime + noOfSlots); // take note
         newBooking.setTiming(shifted_timing);
         int newBookingID = conn.updateBookingTiming(newBooking, bookingID);
-    
 
         shiftResult[0] = (newBookingID > 0) ? 1 : 0; // 0 is failure to add
         shiftResult[1] = newBookingID;

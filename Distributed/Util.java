@@ -1,9 +1,9 @@
 package Distributed;
 
 public class Util {
-    public static final int MAX_SIZE = 1024;
-    public static final int MAX_PAYLOAD = 1014;
-    public static final int NORMAL_SIZE = 1024;
+    public static final int MAX_SIZE = 3072;
+    public static final int MAX_PAYLOAD = 3062;
+    public static final int NORMAL_SIZE = 3072;
     public static final int NORMAL_PAYLOAD = 54;
 
     // Implements marshalling and demarshalling logic
