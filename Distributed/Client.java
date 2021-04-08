@@ -16,7 +16,6 @@ import java.util.TimeZone;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 
-
 //JUST TO TEST
 import java.nio.charset.StandardCharsets;
 //Marshal-Demarshal
@@ -161,10 +160,6 @@ public class Client {
     }
 
     public static void main(String[] args) throws IOException {
-       
-       
-
-
         int userID = 0;
         int facility = 0; // Facility type
         int facilityNumber = 0; // Facility Selection
@@ -197,7 +192,28 @@ public class Client {
         boolean atMostOnce = false;
         boolean simulateFail = true;
         double probFailure = 0.2;
-
+        Scanner sc = new Scanner(System.in);
+        System.out.println("====================================");
+        System.out.println("Please Enter the server's IPv4 Address");
+        host = sc.next();
+        System.out.println("====================================");
+        System.out.println("Please Enter the server's port");
+        port = sc.nextInt();
+        System.out.println("====================================");
+        System.out.println("Simulate dropping of message on client...");
+        System.out.println("1. YES");
+        System.out.println("2. NO");
+        int simulate = sc.nextInt();
+        switch (simulate) {
+        case 1:
+            simulateFail = true;
+            break;
+        case 2:
+            simulateFail = false;
+            break;
+        default:
+            break;
+        }
         // About payload to create a message
         byte communicationMethod;
         byte requestType;
@@ -221,8 +237,11 @@ public class Client {
         // Main console flow
         boolean quit = false;
         int choice;
-        Scanner sc = new Scanner(System.in);
-
+        if (simulateFail) {
+            System.out.println("[INFO][SIMULATING DROPPING OF MESSAGE]");
+        } else {
+            System.out.println("[INFO][NOT SIMULATING DROPPING OF MESSAGE]");
+        }
         while (!quit) {
             System.out.println("====================================");
             System.out.println("1. Check Facility Availibility.");
@@ -633,14 +652,14 @@ public class Client {
                 System.out.println(receivedString);
                 Long t3 = Long.parseLong(receivedString);
                 Long timeToEnd = System.currentTimeMillis() - (t3 + (Long.valueOf(duration) * 1000));
-                //Convert t3(Long) to date
+                // Convert t3(Long) to date
                 Date datee = new Date(t3);
                 DateFormat format = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
                 format.setTimeZone(TimeZone.getTimeZone("Singapore"));
                 String formatted = format.format(datee);
                 formatted = format.format(datee);
                 System.out.println("[INFO][START OF CALLBACK IS " + formatted + "]");
-                
+
                 while (timeToEnd < 0) {
                     System.out.println("[DEBUG][TIME TO END IS " + timeToEnd.toString() + "]");
                     try {
