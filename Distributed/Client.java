@@ -638,7 +638,7 @@ public class Client {
                 DateFormat format = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
                 format.setTimeZone(TimeZone.getTimeZone("Singapore"));
                 formatted = format.format(datee);
-                System.out.println(formatted);
+                System.out.println("[INFO][START OF CALLBACK IS " + formatted + "]");
                 
                 while (timeToEnd < 0) {
                     System.out.println("[DEBUG][TIME TO END IS " + timeToEnd.toString() + "]");
@@ -667,6 +667,10 @@ public class Client {
                         timeToEnd = System.currentTimeMillis() - (t3 + (Long.valueOf(duration) * 1000));
                     }
                 }
+                //Convert t3(Long) to date
+                Date date1 = new Date(System.currentTimeMillis());
+                formatted = format.format(date1);
+                System.out.println("[INFO][END OF CALLBACK IS " + formatted + "]");
                 break;
 
             case 5:
