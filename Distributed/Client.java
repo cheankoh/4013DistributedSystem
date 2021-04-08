@@ -9,6 +9,13 @@ import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 import java.util.Scanner;
 import java.util.Random;
+import java.util.Date;
+import java.util.DateFormat;
+import java.util.SimpleDateFormat;
+import java.util.TimeZone;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+
 
 //JUST TO TEST
 import java.nio.charset.StandardCharsets;
@@ -154,6 +161,10 @@ public class Client {
     }
 
     public static void main(String[] args) throws IOException {
+       
+       
+
+
         int userID = 0;
         int facility = 0; // Facility type
         int facilityNumber = 0; // Facility Selection
@@ -622,6 +633,13 @@ public class Client {
                 System.out.println(receivedString);
                 Long t3 = Long.parseLong(receivedString);
                 Long timeToEnd = System.currentTimeMillis() - (t3 + (Long.valueOf(duration) * 1000));
+                //Convert t3(Long) to date
+                Date datee = new Date(t3);
+                DateFormat format = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+                format.setTimeZone(TimeZone.getTimeZone("Singapore"));
+                formatted = format.format(datee);
+                System.out.println(formatted);
+                
                 while (timeToEnd < 0) {
                     System.out.println("[DEBUG][TIME TO END IS " + timeToEnd.toString() + "]");
                     try {
