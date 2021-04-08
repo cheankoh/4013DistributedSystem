@@ -667,7 +667,7 @@ public class Client {
                         timeToEnd = System.currentTimeMillis() - (t3 + (Long.valueOf(duration) * 1000));
                     }
                 }
-                //Convert t3(Long) to date
+                
                 Date date1 = new Date(System.currentTimeMillis());
                 formatted = format.format(date1);
                 System.out.println("[INFO][END OF CALLBACK IS " + formatted + "]");
