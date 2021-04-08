@@ -100,27 +100,11 @@ public class Server {
   public static void main(String[] args) throws IOException {
     // TODO: Do this as command line if possible
     boolean atMostOnce = false;
-    boolean simulateFail = true;
+    boolean simulateFail = false;
     double probFailure = 0.5;
 
     // Asking for inputs for semantics, and simulate bit (true/false)
     Scanner sc = new Scanner(System.in);
-    System.out.println("====================================");
-    System.out.println("Selecting semantic for server...");
-    System.out.println("1. AT LEAST ONCE");
-    System.out.println("2. AT MOST ONCE");
-    int semantics = sc.nextInt();
-    switch (semantics) {
-    case 1:
-      atMostOnce = false;
-      break;
-    case 2:
-      atMostOnce = true;
-      break;
-
-    default:
-      break;
-    }
     System.out.println("====================================");
     System.out.println("Simulate dropping of message on server...");
     System.out.println("1. YES");
@@ -135,6 +119,24 @@ public class Server {
       break;
     default:
       break;
+    }
+    if (simulateFail) {
+      System.out.println("====================================");
+      System.out.println("Selecting semantic for server...");
+      System.out.println("1. AT LEAST ONCE");
+      System.out.println("2. AT MOST ONCE");
+      int semantics = sc.nextInt();
+      switch (semantics) {
+      case 1:
+        atMostOnce = false;
+        break;
+      case 2:
+        atMostOnce = true;
+        break;
+
+      default:
+        break;
+      }
     }
     sc.close();
     // About payload to create a reply message
@@ -155,11 +157,13 @@ public class Server {
     // History of callback
     // This store IP/ Port in string as key and Array
     HashMap<CallbackHistoryKey, HashMap<Integer, Long>> cbHistory = new HashMap<CallbackHistoryKey, HashMap<Integer, Long>>();
-    if (atMostOnce) {
-      System.out.println("[INFO][AT MOST ONCE SEMANTICS USED]");
-      historyMap = new HashMap<HistoryKey, HashMap<Integer, byte[]>>();
-    } else {
-      System.out.println("[INFO][AT LEAST ONCE SEMANTICS USED]");
+    if (simulateFail) {
+      if (atMostOnce) {
+        System.out.println("[INFO][AT MOST ONCE SEMANTICS USED]");
+        historyMap = new HashMap<HistoryKey, HashMap<Integer, byte[]>>();
+      } else {
+        System.out.println("[INFO][AT LEAST ONCE SEMANTICS USED]");
+      }
     }
 
     while (true) {
@@ -260,7 +264,6 @@ public class Server {
           if (Timeslots == null) {
             sendString = "invalid day entered";
           } else {
-            sendString = sendString.concat("Time displayed is start time of the 30 minute slot" + "\n");
             int head = dayOfWeek.get(0);
             for (Integer[][] slots : Timeslots) {
               sendString = sendString.concat(days[head - 1] + "\n");
@@ -575,7 +578,7 @@ public class Server {
         if (notClientExpired) {
           try {
             server.send(sendBuffer, callback.getKey().getIPAddress(), callback.getKey().getPort());
-            System.out.println("[DEBUG][SERVER HAS SENT CALLBACK MESSAGE TO CLIENT]");
+            System.out.println("[DEBUG][SERVER HAS TRIED SENDING CALLBACK MESSAGE TO CLIENT]\n");
           } catch (Exception e) {
             // TODO: handle exception
             System.out.println("[DEBUG][ERROR HAS OCCURRED TRYING TO SEND CALLBACK MESSAGE TO REGISTERED CLIENT]");

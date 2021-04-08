@@ -1,6 +1,7 @@
 package Controller;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
@@ -46,7 +47,11 @@ public class FacilityController {
         if (dayOfWeek.get(1) != -1 & dayOfWeek.get(1) < dayOfWeek.get(0)) {
             return null;
         }
-        ResultAvailability.remove(ResultAvailability.size() - 1);
+        for (int i = 0; i < ResultAvailability.size(); i++) {
+            int len = ResultAvailability.get(i).length;
+            Integer[][] tempArray = Arrays.copyOf(ResultAvailability.get(i), len - 1);
+            ResultAvailability.set(i, tempArray);
+        }
         return ResultAvailability;
     }
 
